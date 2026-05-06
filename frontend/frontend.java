@@ -1,5 +1,6 @@
 package siratech.frontend;
 
+import siratech.backend.*;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -46,6 +47,10 @@ import javax.swing.table.DefaultTableModel;
 //  Telas: Login, Dashboard, Cadastro Animal,
 //         Cadastro Fazenda, Monitoramento/Alertas
 // ============================================================
+
+// ─────────────────────────────────────────────────────────────
+// TEMA: Cores e fontes globais
+// ─────────────────────────────────────────────────────────────
 class Tema {
     static final Color BG          = new Color(13, 26, 15);
     static final Color BG2         = new Color(17, 31, 19);
