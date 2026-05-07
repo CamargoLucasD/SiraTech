@@ -170,7 +170,7 @@ class NavBar extends JPanel {
         setLayout(new FlowLayout(FlowLayout.LEFT, 4, 8));
         setPreferredSize(new Dimension(0, 48));
 
-        JLabel brand = Tema.criarLabel("▶ AGROTECH", Tema.FONT_TITLE, Tema.GREENL);
+        JLabel brand = Tema.criarLabel("▶ SIRATECH", Tema.FONT_TITLE, Tema.GREENL);
         brand.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 20));
         add(brand);
 
@@ -196,7 +196,7 @@ class NavBar extends JPanel {
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         right.setBackground(Tema.BG2);
         right.setOpaque(false);
-        JLabel status = Tema.criarLabel("● ADMIN | FAZENDA BOI VERDE", Tema.FONT_SMALL, Tema.TEXT3);
+        JLabel status = Tema.criarLabel("● ADMIN | FAZENDA ENGENHO DAS PALMEIRAS", Tema.FONT_SMALL, Tema.TEXT3);
         right.add(status);
         add(right);
     }
@@ -327,7 +327,7 @@ class LoginScreen extends JPanel {
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoPanel.add(iconLabel);
         logoPanel.add(Box.createVerticalStrut(10));
-        JLabel titulo = Tema.criarLabel("AGROTECH", Tema.FONT_TITLE, Tema.GREENL);
+        JLabel titulo = Tema.criarLabel("SIRATECH", Tema.FONT_TITLE, Tema.GREENL);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoPanel.add(titulo);
         JLabel sub = Tema.criarLabel("SISTEMA DE RASTREAMENTO BOVINO", Tema.FONT_SMALL, Tema.TEXT3);
@@ -1132,7 +1132,7 @@ class MainFrame extends JFrame {
     public MainFrame() {
         this.backend = Backend.getInstance();
 
-        setTitle("AgroTech — Sistema de Rastreamento Bovino");
+        setTitle("SIRATECH — Sistema de Rastreamento Bovino");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1100, 700));
         setPreferredSize(new Dimension(1200, 750));
