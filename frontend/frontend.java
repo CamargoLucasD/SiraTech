@@ -1,6 +1,6 @@
-package siratech.frontend;
+package frontend;
 
-import siratech.backend.*;
+import backend.*;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -158,8 +158,9 @@ class Tema {
 class NavBar extends JPanel {
     private String[] abas = {"DASHBOARD", "ANIMAIS", "FAZENDA", "ALERTAS"};
     private JButton[] botoes = new JButton[4];
-    private int abaAtiva;
+    //private int abaAtiva;
     private MainFrame mainFrame;
+    private int abaAtiva;
 
     public NavBar(MainFrame frame, int abaAtiva) {
         this.mainFrame = frame;
@@ -1167,7 +1168,7 @@ class MainFrame extends JFrame {
 // ─────────────────────────────────────────────────────────────
 // MAIN: Ponto de entrada da aplicação
 // ─────────────────────────────────────────────────────────────
-public class Frontend {
+public class frontend {
     public static void main(String[] args) {
         // Tema escuro do sistema operacional
         try {

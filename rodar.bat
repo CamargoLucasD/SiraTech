@@ -1,0 +1,3 @@
+@echo off
+javac -d out backend\Animal.java backend\Alerta.java backend\AlertaService.java backend\AnimalService.java backend\AuthService.java backend\Backend.java backend\Colar.java backend\ColarService.java backend\Fazenda.java backend\FazendaService.java backend\GeofenceService.java backend\Localizacao.java backend\Lote.java backend\RastreamentoService.java frontend\frontend.java
+java -cp out frontend.frontend
