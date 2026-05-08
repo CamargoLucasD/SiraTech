@@ -1,18 +1,45 @@
 package backend;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "animais")
 public class Animal {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "nome")
     private String nome;
+
+    @Column(name = "raca")
     private String raca;
+
+    @Column(name = "numero_brinco", unique = true)
     private String numeroBrinco;
+
+    @Column(name = "sexo")
     private String sexo;
+
+    @Column(name = "peso")
     private double peso;
+
+    @Column(name = "data_nascimento")
     private LocalDateTime dataNascimento;
+
+    @Column(name = "lote")
     private String lote;
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "observacoes")
     private String observacoes;
+
+    @OneToOne
+    @JoinColumn(name = "colar_id")
     private Colar colar;
 
     public Animal() {}

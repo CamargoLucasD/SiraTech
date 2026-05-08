@@ -1,21 +1,47 @@
 package backend;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 public class AuthService {
-    private Map<String, String> usuarios = new HashMap<>();
+
     private String usuarioLogado = null;
 
     public AuthService() {
-        usuarios.put("admin",   "12345");
-        usuarios.put("gerente", "fazenda");
+        criarUsuariosIniciais();
+    }
+
+    private void criarUsuariosIniciais() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            long total = session.createQuery("SELECT COUNT(u) FROM Usuario u", Long.class)
+                    .uniqueResult();
+
+            if (total == 0) {
+                session.persist(new Usuario("admin", "12345", "Administrador"));
+                session.persist(new Usuario("gerente", "fazenda", "Gerente"));
+            }
+
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean login(String usuario, String senha) {
-        if (usuarios.containsKey(usuario) && usuarios.get(usuario).equals(senha)) {
-            usuarioLogado = usuario;
-            return true;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Usuario> query = session.createQuery(
+                    "FROM Usuario u WHERE u.login = :login AND u.senha = :senha", Usuario.class);
+            query.setParameter("login", usuario);
+            query.setParameter("senha", senha);
+            Usuario u = query.uniqueResult();
+            if (u != null) {
+                usuarioLogado = usuario;
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }

@@ -1,14 +1,31 @@
 package backend;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "lotes")
 public class Lote {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "nome")
     private String nome;
+
+    @Column(name = "area_ha")
     private double areaHa;
+
+    @Column(name = "status")
     private String status;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lote_id")
     private List<Animal> animais = new ArrayList<>();
+
+    public Lote() {}
 
     public Lote(int id, String nome, double areaHa) {
         this.id = id;

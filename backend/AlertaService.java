@@ -1,51 +1,86 @@
 package backend;
 
+import org.hibernate.Session;
 import java.util.*;
 
 public class AlertaService {
-    private List<Alerta> alertas = new ArrayList<>();
-    private int proximoId = 1;
+
     private List<Runnable> listeners = new ArrayList<>();
 
     public AlertaService() {}
 
     public Alerta gerarAlerta(Alerta.Tipo tipo, Animal animal, String mensagem) {
-        Alerta alerta = new Alerta(proximoId++, tipo, animal, mensagem);
-        alertas.add(alerta);
+        Alerta alerta = new Alerta(0, tipo, animal, mensagem);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.persist(alerta);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         notificarListeners();
         return alerta;
     }
 
     public List<Alerta> listarAtivos() {
-        List<Alerta> ativos = new ArrayList<>();
-        for (Alerta a : alertas) {
-            if (!a.isResolvido()) ativos.add(a);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "FROM Alerta a WHERE a.resolvido = false", Alerta.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        return ativos;
     }
 
     public List<Alerta> listarTodos() {
-        return Collections.unmodifiableList(alertas);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Alerta", Alerta.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public boolean resolverAlerta(int id) {
-        for (Alerta a : alertas) {
-            if (a.getId() == id) {
-                a.setResolvido(true);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            Alerta alerta = session.get(Alerta.class, id);
+            if (alerta != null) {
+                alerta.setResolvido(true);
+                session.merge(alerta);
+                session.getTransaction().commit();
                 notificarListeners();
                 return true;
             }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public void resolverTodos() {
-        alertas.forEach(a -> a.setResolvido(true));
-        notificarListeners();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.createMutationQuery(
+                    "UPDATE Alerta a SET a.resolvido = true WHERE a.resolvido = false")
+                    .executeUpdate();
+            session.getTransaction().commit();
+            notificarListeners();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public int totalAtivos() {
-        return (int) alertas.stream().filter(a -> !a.isResolvido()).count();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT COUNT(a) FROM Alerta a WHERE a.resolvido = false", Long.class)
+                    .uniqueResult().intValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public void addListener(Runnable listener) { listeners.add(listener); }

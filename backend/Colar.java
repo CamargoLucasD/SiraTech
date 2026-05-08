@@ -1,12 +1,32 @@
 package backend;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "colares")
 public class Colar {
+
+    @Id
+    @Column(name = "id")
     private String id;
+
+    @Column(name = "bateria")
     private int bateria;
+
+    @Column(name = "nivel_sinal")
     private String nivelSinal;
+
+    @Column(name = "frequencia_minutos")
     private int frequenciaMinutos;
+
+    @Column(name = "firmware")
     private String firmware;
+
+    @Column(name = "disponivel")
     private boolean disponivel;
+
+    @OneToOne
+    @JoinColumn(name = "ultima_localizacao_id")
     private Localizacao ultimaLocalizacao;
 
     public Colar() {}

@@ -2,28 +2,30 @@ package backend;
 
 public class Backend {
 
-    public final AuthService        authService;
-    public final AnimalService      animalService;
-    public final ColarService       colarService;
-    public final FazendaService     fazendaService;
-    public final GeofenceService    geofenceService;
-    public final AlertaService      alertaService;
+    public final AuthService         authService;
+    public final AnimalService       animalService;
+    public final ColarService        colarService;
+    public final FazendaService      fazendaService;
+    public final GeofenceService     geofenceService;
+    public final AlertaService       alertaService;
     public final RastreamentoService rastreamentoService;
 
     private static Backend instancia;
 
     private Backend() {
-        this.authService        = new AuthService();
-        this.animalService      = new AnimalService();
-        this.colarService       = new ColarService();
-        this.fazendaService     = new FazendaService();
-        this.geofenceService    = new GeofenceService();
-        this.alertaService      = new AlertaService();
+        this.authService         = new AuthService();
+        this.animalService       = new AnimalService();
+        this.colarService        = new ColarService();
+        this.fazendaService      = new FazendaService();
+        this.geofenceService     = new GeofenceService();
+        this.alertaService       = new AlertaService();
         this.rastreamentoService = new RastreamentoService(
                 geofenceService, fazendaService, alertaService);
+
+        // Fecha o banco quando o programa encerrar
+        Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtil::fechar));
     }
 
-    /** Singleton — uma única instância compartilhada por toda a UI */
     public static Backend getInstance() {
         if (instancia == null) instancia = new Backend();
         return instancia;
