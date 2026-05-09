@@ -1,22 +1,53 @@
 package backend;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "fazendas")
 public class Fazenda {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "nome")
     private String nome;
+
+    @Column(name = "proprietario")
     private String proprietario;
+
+    @Column(name = "municipio")
     private String municipio;
+
+    @Column(name = "estado")
     private String estado;
+
+    @Column(name = "area_total")
     private double areaTotal;
+
+    @Column(name = "area_monitorada")
     private double areaMonitorada;
+
+    @Column(name = "latitude_centro")
     private double latitudeCentro;
+
+    @Column(name = "longitude_centro")
     private double longitudeCentro;
+
+    @Column(name = "raio_metros")
     private double raioMetros;
+
+    @Column(name = "tolerancia_metros")
     private double toleranciaMetros;
+
+    @Column(name = "tipo_area")
     private String tipoArea;
-    private List<Lote> lotes = new ArrayList<>();
+
+   @OneToMany(fetch = FetchType.EAGER)
+   @JoinColumn(name = "fazenda_id")
+   private List<Lote> lotes = new ArrayList<>();
 
     public Fazenda() {}
 

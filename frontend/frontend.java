@@ -1,77 +1,48 @@
 package frontend;
 
 import backend.*;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
+import java.util.List;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.table.*;
 
 // ============================================================
-//  AGROTECH - FRONTEND COMPLETO (Java Swing)
-//  Telas: Login, Dashboard, Cadastro Animal,
-//         Cadastro Fazenda, Monitoramento/Alertas
+//  SIRATECH - FRONTEND COMPLETO (Java Swing)
 // ============================================================
 
 // ─────────────────────────────────────────────────────────────
-// TEMA: Cores e fontes globais
+// TEMA
 // ─────────────────────────────────────────────────────────────
 class Tema {
-    static final Color BG          = new Color(13, 26, 15);
-    static final Color BG2         = new Color(17, 31, 19);
-    static final Color BG3         = new Color(22, 32, 24);
-    static final Color CARD        = new Color(26, 43, 28);
-    static final Color GREEN       = new Color(45, 106, 48);
-    static final Color GREEN2      = new Color(58, 138, 62);
-    static final Color GREEN3      = new Color(76, 175, 82);
-    static final Color GREENL      = new Color(125, 214, 138);
-    static final Color TEXT        = new Color(232, 245, 233);
-    static final Color TEXT2       = new Color(165, 200, 168);
-    static final Color TEXT3       = new Color(106, 155, 110);
-    static final Color RED         = new Color(229, 57, 53);
-    static final Color AMBER       = new Color(249, 168, 37);
-    static final Color BORDER      = new Color(36, 61, 38);
+    static final Color BG     = new Color(10, 20, 12);
+    static final Color BG2    = new Color(15, 28, 17);
+    static final Color BG3    = new Color(20, 35, 22);
+    static final Color CARD   = new Color(24, 40, 26);
+    static final Color GREEN  = new Color(34, 139, 34);
+    static final Color GREEN2 = new Color(46, 160, 46);
+    static final Color GREEN3 = new Color(72, 199, 72);
+    static final Color GREENL = new Color(120, 230, 120);
+    static final Color CYAN   = new Color(0, 220, 200);
+    static final Color TEXT   = new Color(230, 245, 232);
+    static final Color TEXT2  = new Color(160, 200, 165);
+    static final Color TEXT3  = new Color(100, 150, 105);
+    static final Color RED    = new Color(220, 50, 50);
+    static final Color AMBER  = new Color(240, 160, 30);
+    static final Color BORDER = new Color(32, 58, 35);
+    static final Color ACCENT = new Color(0, 180, 170);
 
-    static final Font FONT_TITLE  = new Font("Courier New", Font.BOLD, 15);
-    static final Font FONT_LABEL  = new Font("Courier New", Font.BOLD, 11);
-    static final Font FONT_BODY   = new Font("Courier New", Font.PLAIN, 12);
-    static final Font FONT_BIG    = new Font("Courier New", Font.BOLD, 26);
-    static final Font FONT_SMALL  = new Font("Courier New", Font.PLAIN, 10);
+    static final Font F_TITLE  = new Font("Segoe UI", Font.BOLD, 15);
+    static final Font F_LABEL  = new Font("Segoe UI", Font.BOLD, 11);
+    static final Font F_BODY   = new Font("Segoe UI", Font.PLAIN, 12);
+    static final Font F_BIG    = new Font("Segoe UI", Font.BOLD, 28);
+    static final Font F_SMALL  = new Font("Segoe UI", Font.PLAIN, 10);
+    static final Font F_MONO   = new Font("Courier New", Font.BOLD, 13);
 
     static JTextField criarCampo(String placeholder) {
         JTextField f = new JTextField(placeholder);
@@ -80,8 +51,8 @@ class Tema {
         f.setCaretColor(GREENL);
         f.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER, 1),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
-        f.setFont(FONT_BODY);
+                BorderFactory.createEmptyBorder(7, 12, 7, 12)));
+        f.setFont(F_BODY);
         return f;
     }
 
@@ -92,8 +63,8 @@ class Tema {
         f.setCaretColor(GREENL);
         f.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER, 1),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
-        f.setFont(FONT_BODY);
+                BorderFactory.createEmptyBorder(7, 12, 7, 12)));
+        f.setFont(F_BODY);
         return f;
     }
 
@@ -101,9 +72,8 @@ class Tema {
         JComboBox<String> c = new JComboBox<>(opcoes);
         c.setBackground(BG3);
         c.setForeground(TEXT);
-        c.setFont(FONT_BODY);
+        c.setFont(F_BODY);
         c.setBorder(BorderFactory.createLineBorder(BORDER, 1));
-        ((JLabel) c.getRenderer()).setBackground(BG3);
         return c;
     }
 
@@ -111,8 +81,8 @@ class Tema {
         JButton b = new JButton(texto);
         b.setBackground(GREEN);
         b.setForeground(Color.WHITE);
-        b.setFont(FONT_LABEL);
-        b.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
+        b.setFont(F_LABEL);
+        b.setBorder(BorderFactory.createEmptyBorder(9, 20, 9, 20));
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.addMouseListener(new MouseAdapter() {
@@ -126,10 +96,23 @@ class Tema {
         JButton b = new JButton(texto);
         b.setBackground(BG3);
         b.setForeground(TEXT2);
-        b.setFont(FONT_LABEL);
+        b.setFont(F_LABEL);
         b.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER, 1),
-                BorderFactory.createEmptyBorder(7, 16, 7, 16)));
+                BorderFactory.createEmptyBorder(8, 18, 8, 18)));
+        b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    static JButton criarBotaoPerigo(String texto) {
+        JButton b = new JButton(texto);
+        b.setBackground(new Color(80, 20, 20));
+        b.setForeground(RED);
+        b.setFont(F_LABEL);
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(RED, 1),
+                BorderFactory.createEmptyBorder(8, 18, 8, 18)));
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return b;
@@ -150,15 +133,37 @@ class Tema {
         l.setForeground(cor);
         return l;
     }
+
+    static JTable criarTabela(DefaultTableModel model) {
+        JTable t = new JTable(model);
+        t.setBackground(BG3);
+        t.setForeground(TEXT2);
+        t.setGridColor(BORDER);
+        t.setFont(F_BODY);
+        t.setRowHeight(30);
+        t.setSelectionBackground(new Color(34, 80, 36));
+        t.setSelectionForeground(TEXT);
+        t.getTableHeader().setBackground(CARD);
+        t.getTableHeader().setForeground(TEXT3);
+        t.getTableHeader().setFont(F_LABEL);
+        t.getTableHeader().setPreferredSize(new Dimension(0, 32));
+        return t;
+    }
+
+    static JScrollPane criarScroll(JTable tabela) {
+        JScrollPane s = new JScrollPane(tabela);
+        s.getViewport().setBackground(BG3);
+        s.setBorder(BorderFactory.createLineBorder(BORDER, 1));
+        s.getVerticalScrollBar().setBackground(BG3);
+        return s;
+    }
 }
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENTE: NavBar reutilizável
+// NAVBAR
 // ─────────────────────────────────────────────────────────────
 class NavBar extends JPanel {
-    private String[] abas = {"DASHBOARD", "ANIMAIS", "FAZENDA", "ALERTAS"};
-    private JButton[] botoes = new JButton[4];
-    //private int abaAtiva;
+    private String[] abas = {"DASHBOARD", "ANIMAIS", "COLEIRAS", "FAZENDA", "ALERTAS"};
     private MainFrame mainFrame;
     private int abaAtiva;
 
@@ -167,80 +172,76 @@ class NavBar extends JPanel {
         this.abaAtiva = abaAtiva;
         setBackground(Tema.BG2);
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Tema.BORDER));
-        setLayout(new FlowLayout(FlowLayout.LEFT, 4, 8));
-        setPreferredSize(new Dimension(0, 48));
+        setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(0, 50));
 
-        JLabel brand = Tema.criarLabel("▶ SIRATECH", Tema.FONT_TITLE, Tema.GREENL);
-        brand.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 20));
-        add(brand);
+        // Esquerda: brand + abas
+        JPanel esquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 8));
+        esquerda.setBackground(Tema.BG2);
+
+        JLabel brand = Tema.criarLabel("◈ SIRATECH", Tema.F_MONO, Tema.CYAN);
+        brand.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 24));
+        esquerda.add(brand);
 
         for (int i = 0; i < abas.length; i++) {
             final int idx = i;
-            botoes[i] = new JButton(abas[i]);
-            botoes[i].setFont(Tema.FONT_SMALL);
-            botoes[i].setFocusPainted(false);
-            botoes[i].setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-            botoes[i].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
+            JButton btn = new JButton(abas[i]);
+            btn.setFont(Tema.F_SMALL);
+            btn.setFocusPainted(false);
+            btn.setBorder(BorderFactory.createEmptyBorder(7, 14, 7, 14));
+            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             if (i == abaAtiva) {
-                botoes[i].setBackground(Tema.GREEN);
-                botoes[i].setForeground(Color.WHITE);
+                btn.setBackground(Tema.GREEN);
+                btn.setForeground(Color.WHITE);
             } else {
-                botoes[i].setBackground(Tema.BG2);
-                botoes[i].setForeground(Tema.TEXT2);
+                btn.setBackground(Tema.BG2);
+                btn.setForeground(Tema.TEXT2);
             }
-            botoes[i].addActionListener(e -> mainFrame.navegarPara(idx));
-            add(botoes[i]);
+            btn.addActionListener(e -> mainFrame.navegarPara(idx));
+            esquerda.add(btn);
         }
+        add(esquerda, BorderLayout.WEST);
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        right.setBackground(Tema.BG2);
-        right.setOpaque(false);
-        JLabel status = Tema.criarLabel("● ADMIN | FAZENDA ENGENHO DAS PALMEIRAS", Tema.FONT_SMALL, Tema.TEXT3);
-        right.add(status);
-        add(right);
+        // Direita: status
+        JPanel direita = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 14));
+        direita.setBackground(Tema.BG2);
+        direita.add(Tema.criarLabel("● ONLINE", Tema.F_SMALL, Tema.GREEN3));
+        direita.add(Tema.criarLabel("ADMIN", Tema.F_SMALL, Tema.TEXT3));
+        add(direita, BorderLayout.EAST);
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENTE: StatCard (card de métrica)
+// STATCARD
 // ─────────────────────────────────────────────────────────────
 class StatCard extends JPanel {
     public StatCard(String label, String valor, Color corValor, String sub) {
         setBackground(Tema.CARD);
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Tema.BORDER, 1),
-                BorderFactory.createEmptyBorder(12, 14, 12, 14)));
+                BorderFactory.createEmptyBorder(14, 16, 14, 16)));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        add(Tema.criarLabel(label, Tema.FONT_SMALL, Tema.TEXT3));
-        add(Box.createVerticalStrut(6));
-        JLabel val = Tema.criarLabel(valor, Tema.FONT_BIG, corValor);
-        add(val);
-        add(Box.createVerticalStrut(2));
-        add(Tema.criarLabel(sub, Tema.FONT_SMALL, Tema.TEXT3));
+        add(Tema.criarLabel(label, Tema.F_SMALL, Tema.TEXT3));
+        add(Box.createVerticalStrut(8));
+        add(Tema.criarLabel(valor, Tema.F_BIG, corValor));
+        add(Box.createVerticalStrut(4));
+        add(Tema.criarLabel(sub, Tema.F_SMALL, Tema.TEXT3));
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENTE: MapaPanel — desenha o geofence e animais
+// MAPA PANEL
 // ─────────────────────────────────────────────────────────────
 class MapaPanel extends JPanel {
-    private double[][] animaisDentro = {
-        {0.30, 0.35}, {0.50, 0.50}, {0.65, 0.30}, {0.40, 0.65}, {0.55, 0.70}
-    };
-    private double[][] animaisForaDaArea = {
-        {0.88, 0.20}, {0.05, 0.80}
-    };
-    private String[] nomesForaDaArea = {"Flor #A18", "Nuvem #A02"};
+    private double[][] animaisDentro = {{0.30,0.35},{0.50,0.50},{0.65,0.30},{0.40,0.65},{0.55,0.70}};
+    private double[][] animaisForaDaArea = {{0.88,0.20},{0.05,0.80}};
+    private String[] nomesForaDaArea = {"Flor #A18","Nuvem #A02"};
 
     public MapaPanel() {
         setBackground(Tema.BG3);
         setPreferredSize(new Dimension(400, 240));
         setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
-
-        Timer timer = new Timer(1200, e -> repaint());
-        timer.start();
+        new Timer(1200, e -> repaint()).start();
     }
 
     @Override
@@ -248,25 +249,23 @@ class MapaPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         int w = getWidth(), h = getHeight();
 
         // Grade
-        g2.setColor(new Color(58, 138, 62, 40));
+        g2.setColor(new Color(46, 160, 46, 30));
         g2.setStroke(new BasicStroke(0.5f));
         for (int x = 0; x < w; x += 30) g2.drawLine(x, 0, x, h);
         for (int y = 0; y < h; y += 30) g2.drawLine(0, y, w, y);
 
         // Geofence
-        g2.setColor(new Color(58, 138, 62, 100));
+        g2.setColor(new Color(0, 180, 170, 120));
         g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
                 10, new float[]{8, 6}, 0));
         g2.drawRoundRect(18, 14, w - 36, h - 28, 14, 14);
 
-        // Animais dentro — verde
+        // Animais dentro
         for (double[] pos : animaisDentro) {
-            int ax = (int) (pos[0] * w);
-            int ay = (int) (pos[1] * h);
+            int ax = (int)(pos[0] * w), ay = (int)(pos[1] * h);
             g2.setColor(Tema.GREEN3);
             g2.fillOval(ax - 5, ay - 5, 10, 10);
             g2.setColor(Tema.GREENL);
@@ -274,27 +273,25 @@ class MapaPanel extends JPanel {
             g2.drawOval(ax - 5, ay - 5, 10, 10);
         }
 
-        // Animais fora — vermelho pulsante
+        // Animais fora — pulsante
         long t = System.currentTimeMillis();
         float alpha = 0.4f + 0.6f * Math.abs((float) Math.sin(t / 500.0));
         for (int i = 0; i < animaisForaDaArea.length; i++) {
-            int ax = (int) (animaisForaDaArea[i][0] * w);
-            int ay = (int) (animaisForaDaArea[i][1] * h);
-            g2.setColor(new Color(229, 57, 53, (int) (alpha * 255)));
+            int ax = (int)(animaisForaDaArea[i][0] * w), ay = (int)(animaisForaDaArea[i][1] * h);
+            g2.setColor(new Color(220, 50, 50, (int)(alpha * 255)));
             g2.fillOval(ax - 5, ay - 5, 10, 10);
-            g2.setColor(new Color(255, 107, 107, (int) (alpha * 255)));
+            g2.setColor(new Color(255, 100, 100, (int)(alpha * 255)));
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawOval(ax - 5, ay - 5, 10, 10);
-            // Label
             g2.setColor(Tema.RED);
-            g2.setFont(Tema.FONT_SMALL);
+            g2.setFont(Tema.F_SMALL);
             g2.drawString(nomesForaDaArea[i], ax + 8, ay + 4);
         }
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// TELA 1: LoginScreen
+// TELA LOGIN
 // ─────────────────────────────────────────────────────────────
 class LoginScreen extends JPanel {
     private JTextField campoUsuario;
@@ -307,82 +304,153 @@ class LoginScreen extends JPanel {
         this.backend = backend;
         setBackground(Tema.BG);
         setLayout(new GridBagLayout());
+
+        // Fundo com gradiente
+        setOpaque(true);
         add(criarBoxLogin());
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        // Gradiente sutil no fundo
+        GradientPaint gp = new GradientPaint(0, 0, new Color(10, 20, 12),
+                getWidth(), getHeight(), new Color(5, 30, 20));
+        g2.setPaint(gp);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        // Círculos decorativos
+        g2.setColor(new Color(34, 139, 34, 20));
+        g2.fillOval(-100, -100, 400, 400);
+        g2.setColor(new Color(0, 180, 170, 15));
+        g2.fillOval(getWidth() - 200, getHeight() - 200, 400, 400);
+    }
+
     private JPanel criarBoxLogin() {
-        JPanel box = new JPanel();
-        box.setBackground(Tema.CARD);
-        box.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Tema.BORDER, 1),
-                BorderFactory.createEmptyBorder(40, 40, 40, 40)));
+        JPanel box = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Tema.CARD);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
+                g2.setColor(Tema.BORDER);
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 16, 16);
+            }
+        };
+        box.setOpaque(false);
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.setPreferredSize(new Dimension(360, 400));
+        box.setPreferredSize(new Dimension(380, 500));
+        box.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
 
         // Logo
         JPanel logoPanel = new JPanel();
-        logoPanel.setBackground(Tema.CARD);
+        logoPanel.setOpaque(false);
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
-        JLabel iconLabel = criarIconeLogo();
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        logoPanel.add(iconLabel);
-        logoPanel.add(Box.createVerticalStrut(10));
-        JLabel titulo = Tema.criarLabel("SIRATECH", Tema.FONT_TITLE, Tema.GREENL);
+
+        // Tenta carregar logo do arquivo
+        JLabel logoLabel = carregarLogo();
+        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logoPanel.add(logoLabel);
+        logoPanel.add(Box.createVerticalStrut(14));
+
+        JLabel titulo = Tema.criarLabel("SIRATECH", new Font("Segoe UI", Font.BOLD, 22), Tema.CYAN);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoPanel.add(titulo);
-        JLabel sub = Tema.criarLabel("SISTEMA DE RASTREAMENTO BOVINO", Tema.FONT_SMALL, Tema.TEXT3);
+
+        JLabel sub = Tema.criarLabel("SISTEMA DE RASTREAMENTO AGRO", Tema.F_SMALL, Tema.TEXT3);
         sub.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoPanel.add(sub);
-        box.add(logoPanel);
-        box.add(Box.createVerticalStrut(28));
 
-        // Campo usuário
-        box.add(Tema.criarLabel("USUÁRIO", Tema.FONT_SMALL, Tema.TEXT3));
-        box.add(Box.createVerticalStrut(4));
+        box.add(logoPanel);
+        box.add(Box.createVerticalStrut(30));
+
+        // Separador
+        JSeparator sep = new JSeparator();
+        sep.setForeground(Tema.BORDER);
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        box.add(sep);
+        box.add(Box.createVerticalStrut(24));
+
+        // Campos
+        JLabel lblUser = Tema.criarLabel("USUÁRIO", Tema.F_SMALL, Tema.TEXT3);
+        lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
+        box.add(lblUser);
+        box.add(Box.createVerticalStrut(5));
         campoUsuario = Tema.criarCampo("admin");
+        campoUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        campoUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
         box.add(campoUsuario);
         box.add(Box.createVerticalStrut(14));
 
-        // Campo senha
-        box.add(Tema.criarLabel("SENHA", Tema.FONT_SMALL, Tema.TEXT3));
-        box.add(Box.createVerticalStrut(4));
+        JLabel lblSenha = Tema.criarLabel("SENHA", Tema.F_SMALL, Tema.TEXT3);
+        lblSenha.setAlignmentX(Component.LEFT_ALIGNMENT);
+        box.add(lblSenha);
+        box.add(Box.createVerticalStrut(5));
         campoSenha = Tema.criarSenha();
         campoSenha.setText("12345");
+        campoSenha.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        campoSenha.setAlignmentX(Component.LEFT_ALIGNMENT);
         box.add(campoSenha);
-        box.add(Box.createVerticalStrut(20));
+        box.add(Box.createVerticalStrut(24));
 
-        // Botão
-        JButton btnLogin = Tema.criarBotaoPrimario("ENTRAR NO SISTEMA");
+        JButton btnLogin = Tema.criarBotaoPrimario("ENTRAR NO SISTEMA  →");
         btnLogin.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
         btnLogin.addActionListener(e -> realizarLogin());
         box.add(btnLogin);
 
-        // Enter para login
-        Action loginAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) { realizarLogin(); }
-        };
-        campoSenha.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "login");
-        campoSenha.getActionMap().put("login", loginAction);
+        // Enter
+        campoSenha.addActionListener(e -> realizarLogin());
+        campoUsuario.addActionListener(e -> realizarLogin());
+
+        box.add(Box.createVerticalStrut(16));
+        JLabel hint = Tema.criarLabel("admin / 12345  ·  gerente / fazenda", Tema.F_SMALL, Tema.TEXT3);
+        hint.setAlignmentX(Component.CENTER_ALIGNMENT);
+        box.add(hint);
 
         return box;
     }
 
-    private JLabel criarIconeLogo() {
+    private JLabel carregarLogo() {
+        // Tenta carregar do arquivo logo.png na pasta do projeto
+        try {
+            File f = new File("logo.png");
+            if (f.exists()) {
+                BufferedImage img = ImageIO.read(f);
+                Image scaled = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                return new JLabel(new ImageIcon(scaled));
+            }
+        } catch (Exception ignored) {}
+
+        // Fallback: logo desenhada
         JLabel label = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Tema.GREEN);
-                g2.fillRoundRect(0, 0, 52, 52, 12, 12);
-                g2.setColor(Tema.GREENL);
-                g2.setFont(new Font("Courier New", Font.BOLD, 24));
-                g2.drawString("AT", 10, 34);
+                // Círculo externo
+                g2.setColor(new Color(0, 180, 170, 80));
+                g2.setStroke(new BasicStroke(3));
+                g2.drawOval(2, 2, 96, 96);
+                // Fundo
+                g2.setColor(new Color(15, 40, 20));
+                g2.fillOval(6, 6, 88, 88);
+                // Texto
+                g2.setColor(Tema.CYAN);
+                g2.setFont(new Font("Segoe UI", Font.BOLD, 28));
+                FontMetrics fm = g2.getFontMetrics();
+                String s = "ST";
+                int x = (100 - fm.stringWidth(s)) / 2;
+                g2.drawString(s, x, 58);
+                // Borda verde
+                g2.setColor(Tema.GREEN3);
+                g2.setStroke(new BasicStroke(2));
+                g2.drawOval(6, 6, 88, 88);
             }
         };
-        label.setPreferredSize(new Dimension(52, 52));
-        label.setMinimumSize(new Dimension(52, 52));
+        label.setPreferredSize(new Dimension(100, 100));
+        label.setMinimumSize(new Dimension(100, 100));
         return label;
     }
 
@@ -390,7 +458,7 @@ class LoginScreen extends JPanel {
         String usuario = campoUsuario.getText().trim();
         String senha   = new String(campoSenha.getPassword()).trim();
         if (backend.login(usuario, senha)) {
-            mainFrame.navegarPara(0); // vai para Dashboard
+            mainFrame.navegarPara(0);
         } else {
             JOptionPane.showMessageDialog(this,
                     "Usuário ou senha inválidos!\nUse: admin / 12345",
@@ -400,7 +468,7 @@ class LoginScreen extends JPanel {
 }
 
 // ─────────────────────────────────────────────────────────────
-// TELA 2: DashboardScreen
+// TELA DASHBOARD
 // ─────────────────────────────────────────────────────────────
 class DashboardScreen extends JPanel {
     private Backend backend;
@@ -420,107 +488,158 @@ class DashboardScreen extends JPanel {
         content.setBackground(Tema.BG);
         content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
-        // Cards de métricas
+        // Header
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Tema.BG);
+        header.add(Tema.criarLabel("PAINEL DE CONTROLE", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
+        JLabel data = Tema.criarLabel(new java.util.Date().toString().substring(0, 19), Tema.F_SMALL, Tema.TEXT3);
+        header.add(data, BorderLayout.EAST);
+        content.add(header, BorderLayout.NORTH);
+
+        // Cards métricas
         JPanel statsRow = new JPanel(new GridLayout(1, 4, 10, 0));
         statsRow.setBackground(Tema.BG);
-        statsRow.add(new StatCard("ANIMAIS ATIVOS",
-                String.valueOf(backend.totalAnimais()), Tema.GREENL, "+2 esta semana"));
-        statsRow.add(new StatCard("NA ÁREA",
-                String.valueOf(backend.animaisDentroArea()), Tema.GREEN3, "dentro do geofence"));
-        statsRow.add(new StatCard("ALERTAS",
-                String.valueOf(backend.totalAlertas()), Tema.RED, "fora da área hoje"));
-        statsRow.add(new StatCard("COLARES ATIVOS",
-                String.valueOf(backend.totalColaresAtivos()), Tema.GREENL, "100% conectados"));
-        content.add(statsRow, BorderLayout.NORTH);
+        statsRow.add(new StatCard("ANIMAIS ATIVOS",   String.valueOf(backend.totalAnimais()),       Tema.GREENL, "cadastrados no sistema"));
+        statsRow.add(new StatCard("NA ÁREA",          String.valueOf(backend.animaisDentroArea()),  Tema.GREEN3,  "dentro do geofence"));
+        statsRow.add(new StatCard("ALERTAS",          String.valueOf(backend.totalAlertas()),        Tema.RED,    "aguardando resolução"));
+        statsRow.add(new StatCard("COLARES ATIVOS",   String.valueOf(backend.totalColaresAtivos()), Tema.CYAN,   "GPS conectados"));
 
-        // Grade inferior: mapa + lista
+        JPanel top = new JPanel(new BorderLayout(0, 12));
+        top.setBackground(Tema.BG);
+        top.add(statsRow, BorderLayout.NORTH);
+        content.add(top, BorderLayout.NORTH);
+
+        // Grade: mapa + lista animais
         JPanel grade = new JPanel(new GridLayout(1, 2, 12, 0));
         grade.setBackground(Tema.BG);
 
-        // --- Mapa ---
+        // Mapa
         JPanel cardMapa = Tema.criarCard();
         cardMapa.setLayout(new BorderLayout(0, 8));
-        cardMapa.add(Tema.criarLabel("MAPA EM TEMPO REAL", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        cardMapa.add(Tema.criarLabel("◈ MAPA EM TEMPO REAL", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
         cardMapa.add(new MapaPanel(), BorderLayout.CENTER);
-        JPanel legendas = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        legendas.setBackground(Tema.CARD);
-        legendas.add(criarLegenda("● DENTRO DA ÁREA", Tema.GREEN3));
-        legendas.add(criarLegenda("● FORA DA ÁREA",   Tema.RED));
-        cardMapa.add(legendas, BorderLayout.SOUTH);
+        JPanel leg = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        leg.setBackground(Tema.CARD);
+        leg.add(Tema.criarLabel("● DENTRO", Tema.F_SMALL, Tema.GREEN3));
+        leg.add(Tema.criarLabel("● FORA",   Tema.F_SMALL, Tema.RED));
+        leg.add(Tema.criarLabel("◌ GEOFENCE", Tema.F_SMALL, Tema.CYAN));
+        cardMapa.add(leg, BorderLayout.SOUTH);
         grade.add(cardMapa);
 
-        // --- Lista de animais ---
+        // Lista animais com dados reais
         JPanel cardLista = Tema.criarCard();
         cardLista.setLayout(new BorderLayout(0, 8));
-        cardLista.add(Tema.criarLabel("ANIMAIS MONITORADOS", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        cardLista.add(Tema.criarLabel("◈ ANIMAIS MONITORADOS", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
 
         String[] colunas = {"NOME", "BRINCO", "RAÇA", "LOTE", "STATUS"};
-        Object[][] dados = {
-            {"Mimosa",  "A-012", "Nelore",  "Lote A", "DENTRO"},
-            {"Flor",    "A-018", "Angus",   "Lote B", "FORA!"},
-            {"Estrela", "A-007", "Gir",     "Lote A", "DENTRO"},
-            {"Nuvem",   "A-002", "Nelore",  "Lote A", "FORA!"},
-            {"Bela",    "A-023", "Brahman", "Lote B", "DENTRO"},
-            {"Rosa",    "A-031", "Senepol", "Lote C", "LOW BAT"},
-        };
-
-        DefaultTableModel model = new DefaultTableModel(dados, colunas) {
+        DefaultTableModel model = new DefaultTableModel(colunas, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable tabela = new JTable(model);
-        tabela.setBackground(Tema.BG3);
-        tabela.setForeground(Tema.TEXT2);
-        tabela.setGridColor(Tema.BORDER);
-        tabela.setFont(Tema.FONT_SMALL);
-        tabela.setRowHeight(28);
-        tabela.getTableHeader().setBackground(Tema.CARD);
-        tabela.getTableHeader().setForeground(Tema.TEXT3);
-        tabela.getTableHeader().setFont(Tema.FONT_SMALL);
-
-        // Colorir coluna STATUS
+        for (Animal a : backend.animalService.listarTodos()) {
+            model.addRow(new Object[]{a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getLote(), a.getStatus()});
+        }
+        JTable tabela = Tema.criarTabela(model);
         tabela.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v,
-                    boolean sel, boolean foc, int row, int col) {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int col) {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
-                String val = v.toString();
-                l.setFont(Tema.FONT_SMALL);
-                l.setOpaque(true);
-                if ("DENTRO".equals(val)) {
-                    l.setBackground(new Color(26, 61, 28));
-                    l.setForeground(Tema.GREEN3);
-                } else if ("FORA!".equals(val)) {
-                    l.setBackground(new Color(61, 26, 26));
-                    l.setForeground(Tema.RED);
-                } else {
-                    l.setBackground(new Color(61, 46, 10));
-                    l.setForeground(Tema.AMBER);
-                }
+                l.setOpaque(true); l.setFont(Tema.F_SMALL);
+                String val = v == null ? "" : v.toString();
+                if ("Ativo".equals(val) || "DENTRO".equals(val)) { l.setBackground(new Color(26,61,28)); l.setForeground(Tema.GREEN3); }
+                else if ("FORA".equals(val)) { l.setBackground(new Color(61,26,26)); l.setForeground(Tema.RED); }
+                else { l.setBackground(new Color(61,46,10)); l.setForeground(Tema.AMBER); }
                 return l;
             }
         });
-
-        JScrollPane scroll = new JScrollPane(tabela);
-        scroll.setBackground(Tema.BG3);
-        scroll.getViewport().setBackground(Tema.BG3);
-        scroll.setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
-        cardLista.add(scroll, BorderLayout.CENTER);
+        // Clique para ver detalhes
+        tabela.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = tabela.getSelectedRow();
+                    if (row >= 0) {
+                        String brinco = model.getValueAt(row, 1).toString();
+                        backend.animalService.buscarPorBrinco(brinco).ifPresent(
+                            animal -> new DetalhesAnimalDialog(SwingUtilities.getWindowAncestor(DashboardScreen.this), animal)
+                        );
+                    }
+                }
+            }
+        });
+        JLabel hint = Tema.criarLabel("Duplo clique para ver detalhes", Tema.F_SMALL, Tema.TEXT3);
+        cardLista.add(hint, BorderLayout.SOUTH);
+        cardLista.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
         grade.add(cardLista);
 
         content.add(grade, BorderLayout.CENTER);
         return content;
     }
+}
 
-    private JLabel criarLegenda(String texto, Color cor) {
-        JLabel l = Tema.criarLabel(texto, Tema.FONT_SMALL, cor);
-        return l;
+// ─────────────────────────────────────────────────────────────
+// DIALOG: DETALHES DO ANIMAL
+// ─────────────────────────────────────────────────────────────
+class DetalhesAnimalDialog extends JDialog {
+    public DetalhesAnimalDialog(Window owner, Animal animal) {
+        super(owner, "Detalhes: " + animal.getNome(), ModalityType.APPLICATION_MODAL);
+        setBackground(Tema.BG);
+        getContentPane().setBackground(Tema.BG);
+        setSize(460, 420);
+        setLocationRelativeTo(owner);
+
+        JPanel panel = new JPanel();
+        panel.setBackground(Tema.BG);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
+
+        // Cabeçalho
+        JPanel head = new JPanel(new BorderLayout());
+        head.setBackground(Tema.CARD);
+        head.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        JLabel nome = Tema.criarLabel("🐄 " + animal.getNome(), new Font("Segoe UI", Font.BOLD, 18), Tema.GREENL);
+        head.add(nome, BorderLayout.WEST);
+        JLabel brinco = Tema.criarLabel("# " + animal.getNumeroBrinco(), Tema.F_LABEL, Tema.CYAN);
+        head.add(brinco, BorderLayout.EAST);
+        panel.add(head);
+        panel.add(Box.createVerticalStrut(12));
+
+        // Grid de informações
+        JPanel grid = new JPanel(new GridLayout(0, 2, 8, 8));
+        grid.setBackground(Tema.BG);
+        adicionarInfo(grid, "RAÇA",         animal.getRaca());
+        adicionarInfo(grid, "SEXO",         animal.getSexo() != null ? animal.getSexo() : "—");
+        adicionarInfo(grid, "PESO",         animal.getPeso() > 0 ? animal.getPeso() + " kg" : "—");
+        adicionarInfo(grid, "LOTE",         animal.getLote() != null ? animal.getLote() : "—");
+        adicionarInfo(grid, "STATUS",       animal.getStatus());
+        adicionarInfo(grid, "COLAR GPS",    animal.getColar() != null ? animal.getColar().getId() : "Sem colar");
+        if (animal.getColar() != null) {
+            adicionarInfo(grid, "BATERIA",  animal.getColar().getBateria() + "%");
+            adicionarInfo(grid, "SINAL",    animal.getColar().getNivelSinal());
+        }
+        adicionarInfo(grid, "OBSERVAÇÕES",  animal.getObservacoes() != null && !animal.getObservacoes().isEmpty()
+                ? animal.getObservacoes() : "Nenhuma");
+        panel.add(grid);
+        panel.add(Box.createVerticalStrut(16));
+
+        JButton btnFechar = Tema.criarBotaoPrimario("FECHAR");
+        btnFechar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnFechar.addActionListener(e -> dispose());
+        panel.add(btnFechar);
+
+        setContentPane(new JScrollPane(panel));
+        setVisible(true);
+    }
+
+    private void adicionarInfo(JPanel grid, String label, String valor) {
+        JPanel p = new JPanel(new BorderLayout(0, 2));
+        p.setBackground(Tema.CARD);
+        p.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        p.add(Tema.criarLabel(label, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
+        p.add(Tema.criarLabel(valor, Tema.F_BODY, Tema.TEXT), BorderLayout.CENTER);
+        grid.add(p);
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// TELA 3: CadastroAnimalScreen
+// TELA CADASTRO ANIMAL
 // ─────────────────────────────────────────────────────────────
 class CadastroAnimalScreen extends JPanel {
     private Backend backend;
@@ -528,6 +647,7 @@ class CadastroAnimalScreen extends JPanel {
     private JTextField campoNome, campoBrinco, campoPeso, campoObs;
     private JComboBox<String> comboRaca, comboSexo, comboLote, comboStatus, comboColar;
     private DefaultTableModel tabelaModel;
+    private JTable tabela;
 
     public CadastroAnimalScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
@@ -543,156 +663,145 @@ class CadastroAnimalScreen extends JPanel {
         content.setBackground(Tema.BG);
         content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
-        // Cabeçalho
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Tema.BG);
-        header.add(Tema.criarLabel("CADASTRO DE ANIMAIS", Tema.FONT_TITLE, Tema.GREENL),
-                BorderLayout.WEST);
+        header.add(Tema.criarLabel("GESTÃO DE ANIMAIS", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
         JButton btnNovo = Tema.criarBotaoPrimario("+ NOVO ANIMAL");
         btnNovo.addActionListener(e -> limparFormulario());
         header.add(btnNovo, BorderLayout.EAST);
         content.add(header, BorderLayout.NORTH);
 
-        // Grade: formulário + tabela
         JPanel grade = new JPanel(new GridLayout(1, 2, 12, 0));
         grade.setBackground(Tema.BG);
         grade.add(criarFormulario());
         grade.add(criarPainelTabela());
         content.add(grade, BorderLayout.CENTER);
 
-        // Botões
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.BG);
-        JButton btnSalvar = Tema.criarBotaoPrimario("SALVAR ANIMAL");
+        JButton btnSalvar = Tema.criarBotaoPrimario("✔ SALVAR ANIMAL");
         btnSalvar.addActionListener(e -> salvarAnimal());
+        JButton btnDetalhes = Tema.criarBotaoSecundario("DETALHES");
+        btnDetalhes.addActionListener(e -> verDetalhes());
+        JButton btnRemover = Tema.criarBotaoPerigo("REMOVER");
+        btnRemover.addActionListener(e -> removerAnimal());
         JButton btnCancelar = Tema.criarBotaoSecundario("CANCELAR");
         btnCancelar.addActionListener(e -> limparFormulario());
         acoes.add(btnSalvar);
+        acoes.add(btnDetalhes);
+        acoes.add(btnRemover);
         acoes.add(btnCancelar);
         content.add(acoes, BorderLayout.SOUTH);
-
         return content;
     }
 
     private JPanel criarFormulario() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("DADOS DO ANIMAL", Tema.FONT_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(10));
+        card.add(Tema.criarLabel("◈ DADOS DO ANIMAL", Tema.F_LABEL, Tema.TEXT3));
+        card.add(Box.createVerticalStrut(12));
 
         card.add(criarLinha("NOME", campoNome = Tema.criarCampo(""),
                              "Nº BRINCO", campoBrinco = Tema.criarCampo("")));
         card.add(Box.createVerticalStrut(8));
-
-        comboRaca = Tema.criarCombo("Nelore", "Angus", "Gir", "Brahman", "Senepol", "Tabapuã");
-        comboSexo = Tema.criarCombo("Femea", "Macho");
+        comboRaca = Tema.criarCombo("Nelore","Angus","Gir","Brahman","Senepol","Tabapuã","Simmental");
+        comboSexo = Tema.criarCombo("Femea","Macho");
         card.add(criarLinha("RAÇA", comboRaca, "SEXO", comboSexo));
         card.add(Box.createVerticalStrut(8));
-
         card.add(criarLinha("PESO (KG)", campoPeso = Tema.criarCampo(""),
-                             "LOTE", comboLote = Tema.criarCombo("Lote A", "Lote B", "Lote C")));
+                             "LOTE", comboLote = Tema.criarCombo("Lote A","Lote B","Lote C")));
         card.add(Box.createVerticalStrut(8));
+        comboStatus = Tema.criarCombo("Ativo","Vendido","Abatido");
 
-        comboStatus = Tema.criarCombo("Ativo", "Vendido", "Abatido");
-        comboColar  = Tema.criarCombo("C-07 | Disponível", "C-14 | Disponível");
+        // Carregar colares disponíveis
+        List<Colar> disponiveis = backend.colarService.listarDisponiveis();
+        String[] opcoesColares = new String[disponiveis.size() + 1];
+        opcoesColares[0] = "Sem colar";
+        for (int i = 0; i < disponiveis.size(); i++) {
+            opcoesColares[i+1] = disponiveis.get(i).getId() + " | " + disponiveis.get(i).getBateria() + "%";
+        }
+        comboColar = Tema.criarCombo(opcoesColares);
         card.add(criarLinha("STATUS", comboStatus, "COLAR GPS", comboColar));
         card.add(Box.createVerticalStrut(8));
-
-        card.add(Tema.criarLabel("OBSERVAÇÕES", Tema.FONT_SMALL, Tema.TEXT3));
+        card.add(Tema.criarLabel("OBSERVAÇÕES", Tema.F_SMALL, Tema.TEXT3));
         card.add(Box.createVerticalStrut(4));
         campoObs = Tema.criarCampo("");
-        campoObs.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        campoObs.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
         card.add(campoObs);
-
-        // Status do colar
-        card.add(Box.createVerticalStrut(12));
-        card.add(Tema.criarLabel("STATUS DO COLAR SELECIONADO", Tema.FONT_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(6));
-        JPanel statusColar = new JPanel(new GridLayout(2, 2, 8, 6));
-        statusColar.setBackground(Tema.BG3);
-        statusColar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        statusColar.add(criarMetrica("BATERIA", "87%", Tema.GREEN3));
-        statusColar.add(criarMetrica("SINAL GPS", "FORTE", Tema.GREENL));
-        statusColar.add(criarMetrica("ÚLTIMO PING", "há 2 min", Tema.TEXT2));
-        statusColar.add(criarMetrica("FIRMWARE", "v2.4.1", Tema.TEXT2));
-        card.add(statusColar);
-
         return card;
     }
 
     private JPanel criarPainelTabela() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
-        card.add(Tema.criarLabel("ANIMAIS CADASTRADOS", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
 
-        String[] colunas = {"NOME", "BRINCO", "RAÇA", "COLAR", "STATUS"};
-        Object[][] dados = {};
-        tabelaModel = new DefaultTableModel(dados, colunas) {
+        JPanel topo = new JPanel(new BorderLayout());
+        topo.setBackground(Tema.CARD);
+        topo.add(Tema.criarLabel("◈ ANIMAIS CADASTRADOS", Tema.F_LABEL, Tema.TEXT3), BorderLayout.WEST);
+        JLabel dica = Tema.criarLabel("Duplo clique → detalhes", Tema.F_SMALL, Tema.TEXT3);
+        topo.add(dica, BorderLayout.EAST);
+        card.add(topo, BorderLayout.NORTH);
+
+        String[] colunas = {"NOME","BRINCO","RAÇA","LOTE","COLAR","STATUS"};
+        tabelaModel = new DefaultTableModel(colunas, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-
-        // Popular com dados do backend
         for (Animal a : backend.animalService.listarTodos()) {
-            tabelaModel.addRow(new Object[]{
-                a.getNome(), a.getNumeroBrinco(), a.getRaca(),
-                a.getColar() != null ? a.getColar().getId() : "—",
-                a.getStatus()
-            });
+            tabelaModel.addRow(new Object[]{a.getNome(), a.getNumeroBrinco(), a.getRaca(),
+                    a.getLote(), a.getColar() != null ? a.getColar().getId() : "—", a.getStatus()});
         }
-
-        JTable tabela = new JTable(tabelaModel);
-        tabela.setBackground(Tema.BG3);
-        tabela.setForeground(Tema.TEXT2);
-        tabela.setGridColor(Tema.BORDER);
-        tabela.setFont(Tema.FONT_SMALL);
-        tabela.setRowHeight(26);
-        tabela.getTableHeader().setBackground(Tema.CARD);
-        tabela.getTableHeader().setForeground(Tema.TEXT3);
-        tabela.getTableHeader().setFont(Tema.FONT_SMALL);
-
-        JScrollPane scroll = new JScrollPane(tabela);
-        scroll.getViewport().setBackground(Tema.BG3);
-        scroll.setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
-        card.add(scroll, BorderLayout.CENTER);
+        tabela = Tema.criarTabela(tabelaModel);
+        tabela.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) verDetalhes();
+            }
+        });
+        card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
         return card;
     }
 
     private JPanel criarLinha(String l1, JComponent c1, String l2, JComponent c2) {
         JPanel p = new JPanel(new GridLayout(1, 2, 10, 0));
         p.setBackground(Tema.CARD);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
-
-        JPanel p1 = new JPanel(new BorderLayout(0, 4));
-        p1.setBackground(Tema.CARD);
-        p1.add(Tema.criarLabel(l1, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
+        JPanel p1 = new JPanel(new BorderLayout(0, 4)); p1.setBackground(Tema.CARD);
+        p1.add(Tema.criarLabel(l1, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
         p1.add(c1, BorderLayout.CENTER);
-
-        JPanel p2 = new JPanel(new BorderLayout(0, 4));
-        p2.setBackground(Tema.CARD);
-        p2.add(Tema.criarLabel(l2, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
+        JPanel p2 = new JPanel(new BorderLayout(0, 4)); p2.setBackground(Tema.CARD);
+        p2.add(Tema.criarLabel(l2, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
         p2.add(c2, BorderLayout.CENTER);
-
-        p.add(p1);
-        p.add(p2);
+        p.add(p1); p.add(p2);
         return p;
     }
 
-    private JPanel criarMetrica(String label, String valor, Color cor) {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBackground(Tema.BG3);
-        p.add(Tema.criarLabel(label, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
-        p.add(Tema.criarLabel(valor, new Font("Courier New", Font.BOLD, 16), cor),
-                BorderLayout.CENTER);
-        return p;
+    private void verDetalhes() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione um animal!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        String brinco = tabelaModel.getValueAt(row, 1).toString();
+        backend.animalService.buscarPorBrinco(brinco).ifPresent(
+            animal -> new DetalhesAnimalDialog(SwingUtilities.getWindowAncestor(this), animal)
+        );
+    }
+
+    private void removerAnimal() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione um animal!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        String nome = tabelaModel.getValueAt(row, 0).toString();
+        int confirma = JOptionPane.showConfirmDialog(this,
+                "Remover o animal " + nome + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (confirma == JOptionPane.YES_OPTION) {
+            String brinco = tabelaModel.getValueAt(row, 1).toString();
+            backend.animalService.buscarPorBrinco(brinco).ifPresent(a -> {
+                backend.animalService.remover(a.getId());
+                tabelaModel.removeRow(row);
+            });
+        }
     }
 
     private void salvarAnimal() {
-        String nome   = campoNome.getText().trim();
-        String brinco = campoBrinco.getText().trim();
+        String nome = campoNome.getText().trim(), brinco = campoBrinco.getText().trim();
         if (nome.isEmpty() || brinco.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nome e brinco são obrigatórios!",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Nome e brinco são obrigatórios!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         Animal animal = new Animal();
@@ -702,30 +811,213 @@ class CadastroAnimalScreen extends JPanel {
         animal.setSexo(comboSexo.getSelectedItem().toString());
         animal.setLote(comboLote.getSelectedItem().toString());
         animal.setStatus(comboStatus.getSelectedItem().toString());
-        try {
-            animal.setPeso(Double.parseDouble(campoPeso.getText().trim()));
-        } catch (NumberFormatException ignored) {}
         animal.setObservacoes(campoObs.getText().trim());
-
+        try { animal.setPeso(Double.parseDouble(campoPeso.getText().trim())); } catch (Exception ignored) {}
         Animal salvo = backend.animalService.cadastrar(animal);
-        tabelaModel.addRow(new Object[]{
-            salvo.getNome(), salvo.getNumeroBrinco(), salvo.getRaca(), "—", salvo.getStatus()
-        });
+        tabelaModel.addRow(new Object[]{salvo.getNome(), salvo.getNumeroBrinco(), salvo.getRaca(),
+                salvo.getLote(), "—", salvo.getStatus()});
         limparFormulario();
-        JOptionPane.showMessageDialog(this, "Animal " + salvo.getNome() + " cadastrado com sucesso!",
-                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Animal " + salvo.getNome() + " cadastrado!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void limparFormulario() {
-        campoNome.setText("");
-        campoBrinco.setText("");
-        campoPeso.setText("");
-        campoObs.setText("");
+        campoNome.setText(""); campoBrinco.setText(""); campoPeso.setText(""); campoObs.setText("");
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// TELA 4: CadastroFazendaScreen
+// TELA COLEIRAS
+// ─────────────────────────────────────────────────────────────
+class ColeiraScreen extends JPanel {
+    private Backend backend;
+    private MainFrame mainFrame;
+    private DefaultTableModel tabelaModel;
+
+    public ColeiraScreen(MainFrame frame, Backend backend) {
+        this.mainFrame = frame;
+        this.backend = backend;
+        setBackground(Tema.BG);
+        setLayout(new BorderLayout());
+        add(new NavBar(frame, 2), BorderLayout.NORTH);
+        add(criarConteudo(), BorderLayout.CENTER);
+    }
+
+    private JPanel criarConteudo() {
+        JPanel content = new JPanel(new BorderLayout(0, 12));
+        content.setBackground(Tema.BG);
+        content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        // Header
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Tema.BG);
+        header.add(Tema.criarLabel("GESTÃO DE COLEIRAS GPS", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
+        JButton btnAdicionar = Tema.criarBotaoPrimario("+ NOVA COLEIRA");
+        btnAdicionar.addActionListener(e -> adicionarColeira());
+        header.add(btnAdicionar, BorderLayout.EAST);
+        content.add(header, BorderLayout.NORTH);
+
+        // Stats
+        List<Colar> todos = backend.colarService.listarTodos();
+        long ativos = todos.stream().filter(c -> !c.isDisponivel()).count();
+        long disponiveis = todos.stream().filter(Colar::isDisponivel).count();
+        long batBaixa = backend.colarService.colaresBateriaBaixa(20).size();
+
+        JPanel stats = new JPanel(new GridLayout(1, 3, 10, 0));
+        stats.setBackground(Tema.BG);
+        stats.add(new StatCard("TOTAL",       String.valueOf(todos.size()), Tema.GREENL, "coleiras cadastradas"));
+        stats.add(new StatCard("EM USO",      String.valueOf(ativos),       Tema.CYAN,   "vinculadas a animais"));
+        stats.add(new StatCard("BATERIA BAIXA", String.valueOf(batBaixa),   Tema.AMBER,  "abaixo de 20%"));
+
+        JPanel top = new JPanel(new BorderLayout(0, 12));
+        top.setBackground(Tema.BG);
+        top.add(stats, BorderLayout.NORTH);
+        content.add(top, BorderLayout.NORTH);
+
+        // Tabela
+        JPanel card = Tema.criarCard();
+        card.setLayout(new BorderLayout(0, 8));
+        card.add(Tema.criarLabel("◈ TODAS AS COLEIRAS", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
+
+        String[] colunas = {"ID","BATERIA","SINAL","FREQ. (MIN)","FIRMWARE","STATUS","ANIMAL"};
+        tabelaModel = new DefaultTableModel(colunas, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        carregarTabela();
+
+        JTable tabela = Tema.criarTabela(tabelaModel);
+
+        // Colorir coluna BATERIA
+        tabela.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                l.setOpaque(true);
+                try {
+                    int bat = Integer.parseInt(v.toString().replace("%","").trim());
+                    if (bat <= 20) { l.setBackground(new Color(61,26,26)); l.setForeground(Tema.RED); }
+                    else if (bat <= 50) { l.setBackground(new Color(61,46,10)); l.setForeground(Tema.AMBER); }
+                    else { l.setBackground(new Color(26,61,28)); l.setForeground(Tema.GREEN3); }
+                } catch (Exception ignored) {}
+                return l;
+            }
+        });
+
+        // Colorir STATUS
+        tabela.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                l.setOpaque(true);
+                if ("Disponível".equals(v)) { l.setBackground(new Color(26,61,28)); l.setForeground(Tema.GREEN3); }
+                else { l.setBackground(new Color(20,40,60)); l.setForeground(Tema.CYAN); }
+                return l;
+            }
+        });
+
+        card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
+
+        // Ações
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        acoes.setBackground(Tema.CARD);
+        JButton btnVincular = Tema.criarBotaoPrimario("VINCULAR A ANIMAL");
+        btnVincular.addActionListener(e -> vincularColeira(tabela));
+        JButton btnLiberar = Tema.criarBotaoSecundario("LIBERAR COLEIRA");
+        btnLiberar.addActionListener(e -> liberarColeira(tabela));
+        acoes.add(btnVincular);
+        acoes.add(btnLiberar);
+        card.add(acoes, BorderLayout.SOUTH);
+
+        content.add(card, BorderLayout.CENTER);
+        return content;
+    }
+
+    private void carregarTabela() {
+        tabelaModel.setRowCount(0);
+        for (Colar c : backend.colarService.listarTodos()) {
+            // Buscar animal vinculado
+            String animalNome = "—";
+            for (Animal a : backend.animalService.listarTodos()) {
+                if (a.getColar() != null && a.getColar().getId().equals(c.getId())) {
+                    animalNome = a.getNome();
+                    break;
+                }
+            }
+            tabelaModel.addRow(new Object[]{
+                c.getId(), c.getBateria() + "%", c.getNivelSinal(),
+                c.getFrequenciaMinutos(), c.getFirmware(),
+                c.isDisponivel() ? "Disponível" : "Em uso",
+                animalNome
+            });
+        }
+    }
+
+    private void adicionarColeira() {
+        JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
+        form.setBackground(Tema.BG);
+        JTextField campoId = Tema.criarCampo("Ex: C-20");
+        JTextField campoBat = Tema.criarCampo("100");
+        JComboBox<String> comboSinal = Tema.criarCombo("Forte","Medio","Fraco");
+        JTextField campoFreq = Tema.criarCampo("5");
+        form.add(Tema.criarLabel("ID DA COLEIRA:", Tema.F_SMALL, Tema.TEXT3)); form.add(campoId);
+        form.add(Tema.criarLabel("BATERIA (%):", Tema.F_SMALL, Tema.TEXT3)); form.add(campoBat);
+        form.add(Tema.criarLabel("NÍVEL SINAL:", Tema.F_SMALL, Tema.TEXT3)); form.add(comboSinal);
+        form.add(Tema.criarLabel("FREQUÊNCIA (min):", Tema.F_SMALL, Tema.TEXT3)); form.add(campoFreq);
+
+        int result = JOptionPane.showConfirmDialog(this, form, "Nova Coleira GPS", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String id = campoId.getText().trim();
+            if (id.isEmpty()) return;
+            try {
+                int bat = Integer.parseInt(campoBat.getText().trim());
+                int freq = Integer.parseInt(campoFreq.getText().trim());
+                Colar nova = new Colar(id, bat, comboSinal.getSelectedItem().toString(), freq);
+                // Salvar via service
+                try (org.hibernate.Session session = HibernateUtil.getSessionFactory().openSession()) {
+                    session.beginTransaction();
+                    session.persist(nova);
+                    session.getTransaction().commit();
+                }
+                carregarTabela();
+                JOptionPane.showMessageDialog(this, "Coleira " + id + " cadastrada!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void vincularColeira(JTable tabela) {
+        int row = tabela.getSelectedRow();
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        String status = tabelaModel.getValueAt(row, 5).toString();
+        if (!"Disponível".equals(status)) { JOptionPane.showMessageDialog(this, "Esta coleira já está em uso!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        String colarId = tabelaModel.getValueAt(row, 0).toString();
+
+        List<Animal> animais = backend.animalService.listarAtivos();
+        String[] nomes = animais.stream().map(a -> a.getNome() + " #" + a.getNumeroBrinco()).toArray(String[]::new);
+        if (nomes.length == 0) { JOptionPane.showMessageDialog(this, "Nenhum animal ativo!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+
+        String escolhido = (String) JOptionPane.showInputDialog(this, "Selecione o animal:", "Vincular Coleira",
+                JOptionPane.QUESTION_MESSAGE, null, nomes, nomes[0]);
+        if (escolhido != null) {
+            int idx = java.util.Arrays.asList(nomes).indexOf(escolhido);
+            Animal animal = animais.get(idx);
+            backend.colarService.vincularAoAnimal(colarId, animal);
+            backend.animalService.atualizar(animal);
+            carregarTabela();
+            JOptionPane.showMessageDialog(this, "Coleira " + colarId + " vinculada a " + animal.getNome() + "!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void liberarColeira(JTable tabela) {
+        int row = tabela.getSelectedRow();
+        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        String colarId = tabelaModel.getValueAt(row, 0).toString();
+        backend.colarService.liberarColar(colarId);
+        carregarTabela();
+        JOptionPane.showMessageDialog(this, "Coleira " + colarId + " liberada!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// TELA FAZENDA
 // ─────────────────────────────────────────────────────────────
 class CadastroFazendaScreen extends JPanel {
     private Backend backend;
@@ -740,7 +1032,7 @@ class CadastroFazendaScreen extends JPanel {
         this.backend = backend;
         setBackground(Tema.BG);
         setLayout(new BorderLayout());
-        add(new NavBar(frame, 2), BorderLayout.NORTH);
+        add(new NavBar(frame, 3), BorderLayout.NORTH);
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
@@ -751,8 +1043,7 @@ class CadastroFazendaScreen extends JPanel {
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Tema.BG);
-        header.add(Tema.criarLabel("CADASTRO DE FAZENDA / GEOFENCE",
-                Tema.FONT_TITLE, Tema.GREENL), BorderLayout.WEST);
+        header.add(Tema.criarLabel("FAZENDA & GEOFENCE", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
         content.add(header, BorderLayout.NORTH);
 
         JPanel grade = new JPanel(new GridLayout(1, 2, 12, 0));
@@ -763,7 +1054,7 @@ class CadastroFazendaScreen extends JPanel {
 
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.BG);
-        JButton btnSalvar = Tema.criarBotaoPrimario("SALVAR FAZENDA");
+        JButton btnSalvar = Tema.criarBotaoPrimario("✔ SALVAR FAZENDA");
         btnSalvar.addActionListener(e -> salvarFazenda());
         acoes.add(btnSalvar);
         acoes.add(Tema.criarBotaoSecundario("CANCELAR"));
@@ -776,20 +1067,15 @@ class CadastroFazendaScreen extends JPanel {
     private JPanel criarFormFazenda() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("DADOS DA FAZENDA", Tema.FONT_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(10));
+        card.add(Tema.criarLabel("◈ DADOS DA FAZENDA", Tema.F_LABEL, Tema.TEXT3));
+        card.add(Box.createVerticalStrut(12));
 
-        campoNome         = Tema.criarCampo("");
-        campoProprietario = Tema.criarCampo("");
-        campoMunicipio    = Tema.criarCampo("");
-        comboEstado       = Tema.criarCombo("SP","MG","GO","MT","MS","PR","BA","RS");
-        campoAreaTotal    = Tema.criarCampo("");
-        campoAreaMon      = Tema.criarCampo("");
-        campoLat          = Tema.criarCampo("");
-        campoLon          = Tema.criarCampo("");
-        campoRaio         = Tema.criarCampo("2000");
-        campoTol          = Tema.criarCampo("50");
-        comboTipoArea     = Tema.criarCombo("Circular", "Polígono", "Retangular");
+        campoNome = Tema.criarCampo(""); campoProprietario = Tema.criarCampo("");
+        campoMunicipio = Tema.criarCampo(""); comboEstado = Tema.criarCombo("SP","MG","GO","MT","MS","PR","BA","RS");
+        campoAreaTotal = Tema.criarCampo(""); campoAreaMon = Tema.criarCampo("");
+        campoLat = Tema.criarCampo(""); campoLon = Tema.criarCampo("");
+        campoRaio = Tema.criarCampo("2000"); campoTol = Tema.criarCampo("50");
+        comboTipoArea = Tema.criarCombo("Circular","Polígono","Retangular");
 
         card.add(criarPar("NOME DA FAZENDA", campoNome, "PROPRIETÁRIO", campoProprietario));
         card.add(Box.createVerticalStrut(8));
@@ -797,68 +1083,49 @@ class CadastroFazendaScreen extends JPanel {
         card.add(Box.createVerticalStrut(8));
         card.add(criarPar("ÁREA TOTAL (HA)", campoAreaTotal, "ÁREA MONITORADA (HA)", campoAreaMon));
         card.add(Box.createVerticalStrut(14));
-        card.add(Tema.criarLabel("CONFIGURAÇÃO DO GEOFENCE", Tema.FONT_SMALL, Tema.TEXT3));
+        card.add(Tema.criarLabel("◈ CONFIGURAÇÃO GEOFENCE", Tema.F_LABEL, Tema.TEXT3));
         card.add(Box.createVerticalStrut(8));
-        card.add(criarPar("LAT. CENTRO", campoLat, "LONG. CENTRO", campoLon));
+        card.add(criarPar("LATITUDE CENTRO", campoLat, "LONGITUDE CENTRO", campoLon));
         card.add(Box.createVerticalStrut(8));
         card.add(criarPar("RAIO (METROS)", campoRaio, "TOLERÂNCIA (M)", campoTol));
         card.add(Box.createVerticalStrut(8));
-
-        JPanel tipoPanel = new JPanel(new BorderLayout(0, 4));
-        tipoPanel.setBackground(Tema.CARD);
-        tipoPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
-        tipoPanel.add(Tema.criarLabel("TIPO DE ÁREA", Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
-        tipoPanel.add(comboTipoArea, BorderLayout.CENTER);
-        card.add(tipoPanel);
+        JPanel tipoP = new JPanel(new BorderLayout(0,4)); tipoP.setBackground(Tema.CARD);
+        tipoP.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
+        tipoP.add(Tema.criarLabel("TIPO DE ÁREA", Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
+        tipoP.add(comboTipoArea, BorderLayout.CENTER);
+        card.add(tipoP);
         return card;
     }
 
     private JPanel criarPainelLotes() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
-        card.add(Tema.criarLabel("LOTES DA FAZENDA", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        card.add(Tema.criarLabel("◈ LOTES DA FAZENDA", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
 
-        String[] cols = {"LOTE", "ÁREA (HA)", "ANIMAIS", "STATUS"};
+        String[] cols = {"LOTE","ÁREA (HA)","ANIMAIS","STATUS"};
         tabelaLotes = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable tabela = new JTable(tabelaLotes);
-        tabela.setBackground(Tema.BG3);
-        tabela.setForeground(Tema.TEXT2);
-        tabela.setGridColor(Tema.BORDER);
-        tabela.setFont(Tema.FONT_SMALL);
-        tabela.setRowHeight(26);
-        tabela.getTableHeader().setBackground(Tema.CARD);
-        tabela.getTableHeader().setForeground(Tema.TEXT3);
-        tabela.getTableHeader().setFont(Tema.FONT_SMALL);
-
-        JScrollPane scroll = new JScrollPane(tabela);
-        scroll.getViewport().setBackground(Tema.BG3);
-        scroll.setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
-        scroll.setPreferredSize(new Dimension(0, 120));
+        JTable tabela = Tema.criarTabela(tabelaLotes);
+        JScrollPane scroll = Tema.criarScroll(tabela);
+        scroll.setPreferredSize(new Dimension(0, 130));
         card.add(scroll, BorderLayout.CENTER);
 
-        // Adicionar lote
         JPanel addLote = new JPanel(new BorderLayout(0, 6));
         addLote.setBackground(Tema.CARD);
-        addLote.add(Tema.criarLabel("ADICIONAR LOTE", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        addLote.add(Tema.criarLabel("ADICIONAR LOTE", Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
         JPanel campos = new JPanel(new GridLayout(1, 2, 8, 0));
         campos.setBackground(Tema.CARD);
         JTextField campoNomeLote = Tema.criarCampo("Nome do lote");
         JTextField campoAreaLote = Tema.criarCampo("Área (ha)");
-        campos.add(campoNomeLote);
-        campos.add(campoAreaLote);
+        campos.add(campoNomeLote); campos.add(campoAreaLote);
         addLote.add(campos, BorderLayout.CENTER);
         JButton btnAdd = Tema.criarBotaoPrimario("+ ADICIONAR");
         btnAdd.addActionListener(e -> {
-            String n = campoNomeLote.getText().trim();
-            String a = campoAreaLote.getText().trim();
+            String n = campoNomeLote.getText().trim(), a = campoAreaLote.getText().trim();
             if (!n.isEmpty() && !a.isEmpty()) {
                 tabelaLotes.addRow(new Object[]{n, a, "0", "Ativo"});
-                campoNomeLote.setText("");
-                campoAreaLote.setText("");
+                campoNomeLote.setText(""); campoAreaLote.setText("");
             }
         });
         addLote.add(btnAdd, BorderLayout.SOUTH);
@@ -868,19 +1135,12 @@ class CadastroFazendaScreen extends JPanel {
 
     private JPanel criarPar(String l1, JComponent c1, String l2, JComponent c2) {
         JPanel p = new JPanel(new GridLayout(1, 2, 8, 0));
-        p.setBackground(Tema.CARD);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
-        JPanel p1 = new JPanel(new BorderLayout(0, 4));
-        p1.setBackground(Tema.CARD);
-        p1.add(Tema.criarLabel(l1, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
-        p1.add(c1, BorderLayout.CENTER);
-        JPanel p2 = new JPanel(new BorderLayout(0, 4));
-        p2.setBackground(Tema.CARD);
-        p2.add(Tema.criarLabel(l2, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.NORTH);
-        p2.add(c2, BorderLayout.CENTER);
-        p.add(p1);
-        p.add(p2);
-        return p;
+        p.setBackground(Tema.CARD); p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
+        JPanel p1 = new JPanel(new BorderLayout(0,4)); p1.setBackground(Tema.CARD);
+        p1.add(Tema.criarLabel(l1, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH); p1.add(c1, BorderLayout.CENTER);
+        JPanel p2 = new JPanel(new BorderLayout(0,4)); p2.setBackground(Tema.CARD);
+        p2.add(Tema.criarLabel(l2, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH); p2.add(c2, BorderLayout.CENTER);
+        p.add(p1); p.add(p2); return p;
     }
 
     private void preencherComDadosExistentes() {
@@ -896,31 +1156,41 @@ class CadastroFazendaScreen extends JPanel {
         campoRaio.setText(String.valueOf(f.getRaioMetros()));
         campoTol.setText(String.valueOf(f.getToleranciaMetros()));
         for (Lote l : f.getLotes()) {
-            tabelaLotes.addRow(new Object[]{
-                l.getNome(), l.getAreaHa(), l.getAnimais().size(), l.getStatus()
-            });
+            tabelaLotes.addRow(new Object[]{l.getNome(), l.getAreaHa(), l.getAnimais().size(), l.getStatus()});
         }
     }
 
     private void salvarFazenda() {
-        JOptionPane.showMessageDialog(this, "Fazenda salva com sucesso!",
-                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        Fazenda f = backend.fazendaService.getFazendaPrincipal();
+        if (f == null) f = new Fazenda();
+        f.setNome(campoNome.getText().trim());
+        f.setProprietario(campoProprietario.getText().trim());
+        f.setMunicipio(campoMunicipio.getText().trim());
+        try { f.setAreaTotal(Double.parseDouble(campoAreaTotal.getText().trim())); } catch (Exception ignored) {}
+        try { f.setAreaMonitorada(Double.parseDouble(campoAreaMon.getText().trim())); } catch (Exception ignored) {}
+        try { f.setLatitudeCentro(Double.parseDouble(campoLat.getText().trim())); } catch (Exception ignored) {}
+        try { f.setLongitudeCentro(Double.parseDouble(campoLon.getText().trim())); } catch (Exception ignored) {}
+        try { f.setRaioMetros(Double.parseDouble(campoRaio.getText().trim())); } catch (Exception ignored) {}
+        try { f.setToleranciaMetros(Double.parseDouble(campoTol.getText().trim())); } catch (Exception ignored) {}
+        backend.fazendaService.atualizar(f);
+        JOptionPane.showMessageDialog(this, "Fazenda salva com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// TELA 5: MonitoramentoScreen
+// TELA MONITORAMENTO / ALERTAS
 // ─────────────────────────────────────────────────────────────
 class MonitoramentoScreen extends JPanel {
     private Backend backend;
     private MainFrame mainFrame;
+    private DefaultTableModel modelAlertas;
 
     public MonitoramentoScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
         this.backend = backend;
         setBackground(Tema.BG);
         setLayout(new BorderLayout());
-        add(new NavBar(frame, 3), BorderLayout.NORTH);
+        add(new NavBar(frame, 4), BorderLayout.NORTH);
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
@@ -929,45 +1199,37 @@ class MonitoramentoScreen extends JPanel {
         content.setBackground(Tema.BG);
         content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
-        // Cabeçalho
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Tema.BG);
-        header.add(Tema.criarLabel("MONITORAMENTO E ALERTAS", Tema.FONT_TITLE, Tema.GREENL),
-                BorderLayout.WEST);
+        header.add(Tema.criarLabel("MONITORAMENTO E ALERTAS", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btnPanel.setBackground(Tema.BG);
-        JButton btnExportar = Tema.criarBotaoSecundario("EXPORTAR RELATÓRIO");
-        btnExportar.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Relatório exportado com sucesso!", "Exportar", JOptionPane.INFORMATION_MESSAGE));
-        JButton btnLidos = Tema.criarBotaoPrimario("MARCAR TODOS COMO LIDOS");
-        btnLidos.addActionListener(e -> {
-            backend.alertaService.resolverTodos();
-            JOptionPane.showMessageDialog(this, "Todos os alertas foram resolvidos!",
-                    "Alertas", JOptionPane.INFORMATION_MESSAGE);
-        });
+        JButton btnExportar = Tema.criarBotaoSecundario("↓ EXPORTAR RELATÓRIO");
+        btnExportar.addActionListener(e -> exportarRelatorio());
+        JButton btnLidos = Tema.criarBotaoPrimario("✔ RESOLVER TODOS");
+        btnLidos.addActionListener(e -> resolverTodos());
         btnPanel.add(btnExportar);
         btnPanel.add(btnLidos);
         header.add(btnPanel, BorderLayout.EAST);
         content.add(header, BorderLayout.NORTH);
 
-        // Cards de métricas
+        // Stats reais
+        List<Colar> batBaixa = backend.colarService.colaresBateriaBaixa(20);
         JPanel statsRow = new JPanel(new GridLayout(1, 3, 10, 0));
         statsRow.setBackground(Tema.BG);
-        statsRow.add(new StatCard("ALERTAS HOJE", "2", Tema.RED, "animais fora da área"));
-        statsRow.add(new StatCard("BATERIA BAIXA", "3", Tema.AMBER, "colares abaixo de 20%"));
-        statsRow.add(new StatCard("SEM SINAL", "0", Tema.TEXT3, "colares offline"));
+        statsRow.add(new StatCard("ALERTAS ATIVOS", String.valueOf(backend.totalAlertas()), Tema.RED, "aguardando resolução"));
+        statsRow.add(new StatCard("BATERIA BAIXA",  String.valueOf(batBaixa.size()), Tema.AMBER, "colares abaixo de 20%"));
+        statsRow.add(new StatCard("RASTREAMENTOS",  String.valueOf(backend.rastreamentoService.totalRegistros()), Tema.CYAN, "posições registradas"));
 
         JPanel grade = new JPanel(new BorderLayout(0, 12));
         grade.setBackground(Tema.BG);
         grade.add(statsRow, BorderLayout.NORTH);
 
-        // Lista alertas + histórico
         JPanel inferior = new JPanel(new GridLayout(1, 2, 12, 0));
         inferior.setBackground(Tema.BG);
         inferior.add(criarPainelAlertas());
         inferior.add(criarPainelHistorico());
         grade.add(inferior, BorderLayout.CENTER);
-
         content.add(grade, BorderLayout.CENTER);
         return content;
     }
@@ -975,189 +1237,238 @@ class MonitoramentoScreen extends JPanel {
     private JPanel criarPainelAlertas() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
-        card.add(Tema.criarLabel("ALERTAS ATIVOS", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        card.add(Tema.criarLabel("◈ ALERTAS ATIVOS", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
 
-        JPanel lista = new JPanel();
-        lista.setBackground(Tema.CARD);
-        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
+        String[] cols = {"TIPO","ANIMAL","MENSAGEM","HORA"};
+        modelAlertas = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
 
-        lista.add(criarItemAlerta("FORA", "Flor #A18 — FORA DA ÁREA",
-                "Colar C-09 | Angus | Lote B | Distância: 340m", "14:28"));
-        lista.add(Box.createVerticalStrut(6));
-        lista.add(criarItemAlerta("FORA", "Nuvem #A02 — FORA DA ÁREA",
-                "Colar C-01 | Nelore | Lote A | Distância: 120m", "14:15"));
-        lista.add(Box.createVerticalStrut(6));
-        lista.add(criarItemAlerta("WARN", "Rosa #A31 — BATERIA BAIXA",
-                "Colar C-15 | Senepol | Bateria: 14%", "13:55"));
-        lista.add(Box.createVerticalStrut(6));
-        lista.add(criarItemAlerta("WARN", "Dalila #A44 — BATERIA BAIXA",
-                "Colar C-18 | Gir | Bateria: 18%", "12:40"));
-        lista.add(Box.createVerticalStrut(6));
-        lista.add(criarItemAlerta("OK", "Mimosa #A12 — RETORNOU À ÁREA",
-                "Colar C-04 | Nelore | Resolvido automaticamente", "11:20"));
-
-        JScrollPane scroll = new JScrollPane(lista);
-        scroll.getViewport().setBackground(Tema.CARD);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        card.add(scroll, BorderLayout.CENTER);
-        return card;
-    }
-
-    private JPanel criarItemAlerta(String tipo, String titulo, String desc, String hora) {
-        JPanel item = new JPanel(new BorderLayout(10, 0));
-        item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
-
-        Color borda, bg;
-        String simbolo;
-        Color corSimbolo;
-        switch (tipo) {
-            case "FORA":
-                borda = Tema.RED; bg = new Color(61, 26, 26);
-                simbolo = "!"; corSimbolo = Tema.RED; break;
-            case "WARN":
-                borda = Tema.AMBER; bg = new Color(61, 46, 10);
-                simbolo = "~"; corSimbolo = Tema.AMBER; break;
-            default:
-                borda = Tema.GREEN3; bg = new Color(26, 61, 28);
-                simbolo = "✓"; corSimbolo = Tema.GREEN3; break;
+        // Dados reais do banco
+        for (Alerta a : backend.alertaService.listarAtivos()) {
+            modelAlertas.addRow(new Object[]{
+                a.getTipo().toString(),
+                a.getAnimal() != null ? a.getAnimal().getNome() : "—",
+                a.getMensagem(),
+                a.getDataHoraFormatada()
+            });
         }
 
-        item.setBackground(Tema.BG3);
-        item.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 3, 0, 0, borda),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+        JTable tabela = Tema.criarTabela(modelAlertas);
+        tabela.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                l.setOpaque(true);
+                String val = v == null ? "" : v.toString();
+                if (val.contains("FORA")) { l.setBackground(new Color(61,26,26)); l.setForeground(Tema.RED); }
+                else if (val.contains("BATERIA")) { l.setBackground(new Color(61,46,10)); l.setForeground(Tema.AMBER); }
+                else { l.setBackground(new Color(26,61,28)); l.setForeground(Tema.GREEN3); }
+                return l;
+            }
+        });
 
-        JLabel ico = new JLabel(simbolo);
-        ico.setFont(new Font("Courier New", Font.BOLD, 16));
-        ico.setForeground(corSimbolo);
-        ico.setPreferredSize(new Dimension(28, 28));
-        item.add(ico, BorderLayout.WEST);
+        card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
 
-        JPanel texto = new JPanel(new BorderLayout());
-        texto.setBackground(Tema.BG3);
-        texto.add(Tema.criarLabel(titulo, Tema.FONT_LABEL, Tema.TEXT), BorderLayout.NORTH);
-        texto.add(Tema.criarLabel(desc, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.CENTER);
-        item.add(texto, BorderLayout.CENTER);
-
-        item.add(Tema.criarLabel(hora, Tema.FONT_SMALL, Tema.TEXT3), BorderLayout.EAST);
-        return item;
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        acoes.setBackground(Tema.CARD);
+        JButton btnResolver = Tema.criarBotaoPrimario("RESOLVER SELECIONADO");
+        btnResolver.addActionListener(e -> {
+            int row = tabela.getSelectedRow();
+            if (row >= 0) {
+                modelAlertas.removeRow(row);
+                JOptionPane.showMessageDialog(this, "Alerta resolvido!", "OK", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        acoes.add(btnResolver);
+        card.add(acoes, BorderLayout.SOUTH);
+        return card;
     }
 
     private JPanel criarPainelHistorico() {
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
-        card.add(Tema.criarLabel("HISTÓRICO DE POSIÇÕES", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
+        card.add(Tema.criarLabel("◈ HISTÓRICO DE POSIÇÕES", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
 
+        // Selector de animal
         JPanel selector = new JPanel(new BorderLayout(0, 4));
         selector.setBackground(Tema.CARD);
-        selector.add(Tema.criarLabel("SELECIONAR ANIMAL", Tema.FONT_SMALL, Tema.TEXT3),
-                BorderLayout.NORTH);
-        JComboBox<String> combo = Tema.criarCombo(
-                "Flor #A18", "Mimosa #A12", "Estrela #A07", "Nuvem #A02");
+        selector.add(Tema.criarLabel("SELECIONAR ANIMAL", Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
+        List<Animal> animais = backend.animalService.listarTodos();
+        String[] nomes = animais.stream()
+                .map(a -> a.getNome() + " #" + a.getNumeroBrinco())
+                .toArray(String[]::new);
+        JComboBox<String> combo = nomes.length > 0 ? Tema.criarCombo(nomes) : Tema.criarCombo("Nenhum animal");
         selector.add(combo, BorderLayout.CENTER);
         card.add(selector, BorderLayout.NORTH);
 
-        String[] cols = {"HORÁRIO", "LATITUDE", "LONGITUDE", "STATUS"};
-        Object[][] dados = {
-            {"14:28:01", "-23.5701", "-47.4289", "FORA"},
-            {"14:23:01", "-23.5698", "-47.4295", "FORA"},
-            {"14:18:01", "-23.5694", "-47.4301", "LIMITE"},
-            {"14:13:01", "-23.5689", "-47.4310", "DENTRO"},
-            {"14:08:01", "-23.5685", "-47.4318", "DENTRO"},
-            {"14:03:01", "-23.5680", "-47.4325", "DENTRO"},
-        };
-        DefaultTableModel model = new DefaultTableModel(dados, cols) {
+        String[] cols = {"HORÁRIO","LATITUDE","LONGITUDE","STATUS"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable tabela = new JTable(model);
-        tabela.setBackground(Tema.BG3);
-        tabela.setForeground(Tema.TEXT2);
-        tabela.setGridColor(Tema.BORDER);
-        tabela.setFont(Tema.FONT_SMALL);
-        tabela.setRowHeight(26);
-        tabela.getTableHeader().setBackground(Tema.CARD);
-        tabela.getTableHeader().setForeground(Tema.TEXT3);
-        tabela.getTableHeader().setFont(Tema.FONT_SMALL);
 
-        // Colorir STATUS
-        tabela.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v,
-                    boolean sel, boolean foc, int row, int col) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
-                l.setFont(Tema.FONT_SMALL);
-                l.setOpaque(true);
-                String val = v.toString();
-                if ("FORA".equals(val)) {
-                    l.setBackground(new Color(61, 26, 26)); l.setForeground(Tema.RED);
-                } else if ("LIMITE".equals(val)) {
-                    l.setBackground(new Color(61, 46, 10)); l.setForeground(Tema.AMBER);
-                } else {
-                    l.setBackground(new Color(26, 61, 28)); l.setForeground(Tema.GREEN3);
-                }
-                return l;
+        // Carregar histórico do primeiro animal
+        if (!animais.isEmpty()) {
+            carregarHistorico(model, animais.get(0));
+        }
+
+        combo.addActionListener(e -> {
+            int idx = combo.getSelectedIndex();
+            if (idx >= 0 && idx < animais.size()) {
+                carregarHistorico(model, animais.get(idx));
             }
         });
 
-        JScrollPane scroll = new JScrollPane(tabela);
-        scroll.getViewport().setBackground(Tema.BG3);
-        scroll.setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
-        card.add(scroll, BorderLayout.CENTER);
+        JTable tabela = Tema.criarTabela(model);
+        tabela.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                l.setOpaque(true);
+                String val = v == null ? "" : v.toString();
+                if ("Fora".equals(val)) { l.setBackground(new Color(61,26,26)); l.setForeground(Tema.RED); }
+                else if ("Limite".equals(val)) { l.setBackground(new Color(61,46,10)); l.setForeground(Tema.AMBER); }
+                else { l.setBackground(new Color(26,61,28)); l.setForeground(Tema.GREEN3); }
+                return l;
+            }
+        });
+        card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
 
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.CARD);
         JButton btnRel = Tema.criarBotaoPrimario("GERAR RELATÓRIO");
-        btnRel.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Relatório gerado com sucesso!", "Relatório", JOptionPane.INFORMATION_MESSAGE));
-        JButton btnRes = Tema.criarBotaoSecundario("MARCAR RESOLVIDO");
-        btnRes.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Alerta marcado como resolvido!", "Alertas", JOptionPane.INFORMATION_MESSAGE));
+        btnRel.addActionListener(e -> gerarRelatorio(combo, animais));
         acoes.add(btnRel);
-        acoes.add(btnRes);
         card.add(acoes, BorderLayout.SOUTH);
         return card;
+    }
+
+    private void carregarHistorico(DefaultTableModel model, Animal animal) {
+        model.setRowCount(0);
+        List<backend.Localizacao> hist = backend.rastreamentoService.buscarHistoricoPorAnimal(animal);
+        if (hist.isEmpty()) {
+            // Dados de exemplo se não houver histórico
+            model.addRow(new Object[]{"—", "—", "—", "Sem dados"});
+        } else {
+            for (backend.Localizacao loc : hist) {
+                model.addRow(new Object[]{
+                    loc.getTimestampFormatado(),
+                    String.format("%.4f", loc.getLatitude()),
+                    String.format("%.4f", loc.getLongitude()),
+                    loc.getStatus()
+                });
+            }
+        }
+    }
+
+    private void resolverTodos() {
+        backend.alertaService.resolverTodos();
+        modelAlertas.setRowCount(0);
+        JOptionPane.showMessageDialog(this, "Todos os alertas foram resolvidos!", "Alertas", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void exportarRelatorio() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== RELATÓRIO SIRATECH ===\n");
+        sb.append("Data: ").append(new java.util.Date()).append("\n\n");
+        sb.append("--- ANIMAIS ---\n");
+        for (Animal a : backend.animalService.listarTodos()) {
+            sb.append(String.format("%-15s %-8s %-10s %s\n",
+                    a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getStatus()));
+        }
+        sb.append("\n--- ALERTAS ATIVOS ---\n");
+        for (Alerta al : backend.alertaService.listarAtivos()) {
+            sb.append(al.getDataHoraFormatada()).append(" | ")
+              .append(al.getTipo()).append(" | ")
+              .append(al.getMensagem()).append("\n");
+        }
+        sb.append("\n--- COLEIRAS ---\n");
+        for (Colar c : backend.colarService.listarTodos()) {
+            sb.append(String.format("%-6s Bateria: %3d%% Sinal: %-6s %s\n",
+                    c.getId(), c.getBateria(), c.getNivelSinal(),
+                    c.isDisponivel() ? "Disponível" : "Em uso"));
+        }
+
+        // Salvar arquivo
+        try {
+            String nomeArq = "relatorio_siratech_" + System.currentTimeMillis() + ".txt";
+            java.io.FileWriter fw = new java.io.FileWriter(nomeArq);
+            fw.write(sb.toString());
+            fw.close();
+            JOptionPane.showMessageDialog(this,
+                    "Relatório salvo em:\n" + new java.io.File(nomeArq).getAbsolutePath(),
+                    "Relatório Exportado", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void gerarRelatorio(JComboBox<String> combo, List<Animal> animais) {
+        int idx = combo.getSelectedIndex();
+        if (idx < 0 || idx >= animais.size()) return;
+        Animal animal = animais.get(idx);
+        List<backend.Localizacao> hist = backend.rastreamentoService.buscarHistoricoPorAnimal(animal);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== RELATÓRIO DE RASTREAMENTO ===\n");
+        sb.append("Animal: ").append(animal.getNome())
+          .append(" | Brinco: ").append(animal.getNumeroBrinco()).append("\n");
+        sb.append("Gerado em: ").append(new java.util.Date()).append("\n\n");
+        if (hist.isEmpty()) {
+            sb.append("Nenhum registro de posição encontrado.\n");
+        } else {
+            sb.append(String.format("%-22s %-12s %-12s %s\n", "HORÁRIO", "LATITUDE", "LONGITUDE", "STATUS"));
+            for (backend.Localizacao loc : hist) {
+                sb.append(String.format("%-22s %-12.4f %-12.4f %s\n",
+                        loc.getTimestampFormatado(), loc.getLatitude(), loc.getLongitude(), loc.getStatus()));
+            }
+        }
+
+        JTextArea area = new JTextArea(sb.toString());
+        area.setBackground(Tema.BG3);
+        area.setForeground(Tema.TEXT);
+        area.setFont(new Font("Courier New", Font.PLAIN, 11));
+        area.setEditable(false);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(500, 300));
+        JOptionPane.showMessageDialog(this, scroll, "Relatório: " + animal.getNome(), JOptionPane.PLAIN_MESSAGE);
     }
 }
 
 // ─────────────────────────────────────────────────────────────
-// JANELA PRINCIPAL: MainFrame — gerencia a navegação
+// JANELA PRINCIPAL
 // ─────────────────────────────────────────────────────────────
 class MainFrame extends JFrame {
     private Backend backend;
     private CardLayout cardLayout;
     private JPanel painelPrincipal;
+    public backend.HibernateUtil HibernateUtil = null; // referência para ColeiraScreen
 
     public MainFrame() {
         this.backend = Backend.getInstance();
-
-        setTitle("SIRATECH — Sistema de Rastreamento Bovino");
+        setTitle("SIRATECH — Sistema de Rastreamento Agro");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1100, 700));
-        setPreferredSize(new Dimension(1200, 750));
+        setPreferredSize(new Dimension(1280, 780));
 
         cardLayout = new CardLayout();
         painelPrincipal = new JPanel(cardLayout);
-
-        painelPrincipal.add(new LoginScreen(this, backend),             "LOGIN");
-        painelPrincipal.add(new DashboardScreen(this, backend),         "DASHBOARD");
-        painelPrincipal.add(new CadastroAnimalScreen(this, backend),    "ANIMAIS");
-        painelPrincipal.add(new CadastroFazendaScreen(this, backend),   "FAZENDA");
-        painelPrincipal.add(new MonitoramentoScreen(this, backend),     "ALERTAS");
+        painelPrincipal.add(new LoginScreen(this, backend),          "LOGIN");
+        painelPrincipal.add(new DashboardScreen(this, backend),      "DASHBOARD");
+        painelPrincipal.add(new CadastroAnimalScreen(this, backend), "ANIMAIS");
+        painelPrincipal.add(new ColeiraScreen(this, backend),        "COLEIRAS");
+        painelPrincipal.add(new CadastroFazendaScreen(this, backend),"FAZENDA");
+        painelPrincipal.add(new MonitoramentoScreen(this, backend),  "ALERTAS");
 
         setContentPane(painelPrincipal);
         cardLayout.show(painelPrincipal, "LOGIN");
-
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    /** 0=Dashboard, 1=Animais, 2=Fazenda, 3=Alertas */
+    /** 0=Dashboard, 1=Animais, 2=Coleiras, 3=Fazenda, 4=Alertas */
     public void navegarPara(int tela) {
-        String[] nomes = {"DASHBOARD", "ANIMAIS", "FAZENDA", "ALERTAS"};
-        if (!backend.authService.isLogado() && tela != -1) {
+        String[] nomes = {"DASHBOARD","ANIMAIS","COLEIRAS","FAZENDA","ALERTAS"};
+        if (!backend.authService.isLogado()) {
             cardLayout.show(painelPrincipal, "LOGIN");
             return;
         }
@@ -1166,17 +1477,13 @@ class MainFrame extends JFrame {
 }
 
 // ─────────────────────────────────────────────────────────────
-// MAIN: Ponto de entrada da aplicação
+// MAIN
 // ─────────────────────────────────────────────────────────────
 public class frontend {
     public static void main(String[] args) {
-        // Tema escuro do sistema operacional
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        // Inicia na thread de UI do Swing
+        } catch (Exception e) { e.printStackTrace(); }
         SwingUtilities.invokeLater(MainFrame::new);
     }
 }

@@ -1,14 +1,31 @@
 package backend;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Entity
+@Table(name = "localizacoes")
 public class Localizacao {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "latitude")
     private double latitude;
+
+    @Column(name = "longitude")
     private double longitude;
+
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
+
+    @Column(name = "status")
     private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "animal_id")
     private Animal animal;
 
     public Localizacao() {}

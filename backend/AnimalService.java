@@ -1,66 +1,112 @@
 package backend;
 
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import java.util.*;
 
 public class AnimalService {
-    private List<Animal> animais = new ArrayList<>();
-    private int proximoId = 1;
 
     public AnimalService() {
         carregarDadosIniciais();
     }
 
     private void carregarDadosIniciais() {
-        Animal a1 = new Animal(proximoId++, "Mimosa",  "Nelore",  "A-012", "Femea", 420, "Lote A");
-        Animal a2 = new Animal(proximoId++, "Estrela", "Gir",     "A-007", "Femea", 380, "Lote A");
-        Animal a3 = new Animal(proximoId++, "Flor",    "Angus",   "A-018", "Femea", 450, "Lote B");
-        Animal a4 = new Animal(proximoId++, "Bela",    "Brahman", "A-023", "Femea", 395, "Lote B");
-        Animal a5 = new Animal(proximoId++, "Nuvem",   "Nelore",  "A-002", "Femea", 410, "Lote A");
-        Animal a6 = new Animal(proximoId++, "Rosa",    "Senepol", "A-031", "Femea", 360, "Lote C");
-        animais.addAll(Arrays.asList(a1, a2, a3, a4, a5, a6));
+        if (totalAnimais() == 0) {
+            cadastrar(new Animal(0, "Mimosa",  "Nelore",  "A-012", "Femea", 420, "Lote A"));
+            cadastrar(new Animal(0, "Estrela", "Gir",     "A-007", "Femea", 380, "Lote A"));
+            cadastrar(new Animal(0, "Flor",    "Angus",   "A-018", "Femea", 450, "Lote B"));
+            cadastrar(new Animal(0, "Bela",    "Brahman", "A-023", "Femea", 395, "Lote B"));
+            cadastrar(new Animal(0, "Nuvem",   "Nelore",  "A-002", "Femea", 410, "Lote A"));
+            cadastrar(new Animal(0, "Rosa",    "Senepol", "A-031", "Femea", 360, "Lote C"));
+        }
     }
 
     public Animal cadastrar(Animal animal) {
-        animal.setId(proximoId++);
-        animais.add(animal);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.persist(animal);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return animal;
     }
 
     public Optional<Animal> buscarPorId(int id) {
-        return animais.stream().filter(a -> a.getId() == id).findFirst();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return Optional.ofNullable(session.get(Animal.class, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     public Optional<Animal> buscarPorBrinco(String brinco) {
-        return animais.stream()
-                .filter(a -> a.getNumeroBrinco().equalsIgnoreCase(brinco))
-                .findFirst();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Animal> query = session.createQuery(
+                    "FROM Animal a WHERE LOWER(a.numeroBrinco) = LOWER(:brinco)", Animal.class);
+            query.setParameter("brinco", brinco);
+            return Optional.ofNullable(query.uniqueResult());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     public List<Animal> listarTodos() {
-        return Collections.unmodifiableList(animais);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Animal", Animal.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public List<Animal> listarAtivos() {
-        List<Animal> ativos = new ArrayList<>();
-        for (Animal a : animais) {
-            if ("Ativo".equals(a.getStatus())) ativos.add(a);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "FROM Animal a WHERE a.status = 'Ativo'", Animal.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        return ativos;
     }
 
     public boolean atualizar(Animal animal) {
-        for (int i = 0; i < animais.size(); i++) {
-            if (animais.get(i).getId() == animal.getId()) {
-                animais.set(i, animal);
-                return true;
-            }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.merge(animal);
+            session.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public boolean remover(int id) {
-        return animais.removeIf(a -> a.getId() == id);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            Animal animal = session.get(Animal.class, id);
+            if (animal != null) {
+                session.remove(animal);
+                session.getTransaction().commit();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    public int totalAnimais() { return animais.size(); }
+    public int totalAnimais() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT COUNT(a) FROM Animal a", Long.class)
+                    .uniqueResult().intValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

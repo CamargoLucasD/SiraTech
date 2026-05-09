@@ -1,11 +1,12 @@
 package backend;
 
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class RastreamentoService {
-    private List<Localizacao> historico = new ArrayList<>();
-    private int proximoId = 1;
+
     private GeofenceService geofenceService;
     private FazendaService fazendaService;
     private AlertaService alertaService;
@@ -17,7 +18,7 @@ public class RastreamentoService {
     }
 
     public Localizacao registrarPosicao(Animal animal, double latitude, double longitude) {
-        Localizacao loc = new Localizacao(proximoId++, latitude, longitude, animal);
+        Localizacao loc = new Localizacao(0, latitude, longitude, animal);
         loc.setTimestamp(LocalDateTime.now());
 
         Fazenda fazenda = fazendaService.getFazendaPrincipal();
@@ -31,29 +32,55 @@ public class RastreamentoService {
             }
         }
 
-        historico.add(loc);
-        if (animal.getColar() != null) {
-            animal.getColar().setUltimaLocalizacao(loc);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.persist(loc);
+
+            if (animal.getColar() != null) {
+                animal.getColar().setUltimaLocalizacao(loc);
+                session.merge(animal.getColar());
+            }
+
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return loc;
     }
 
     public List<Localizacao> buscarHistoricoPorAnimal(Animal animal) {
-        List<Localizacao> resultado = new ArrayList<>();
-        for (Localizacao l : historico) {
-            if (l.getAnimal() != null && l.getAnimal().getId() == animal.getId()) {
-                resultado.add(l);
-            }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Localizacao> query = session.createQuery(
+                    "FROM Localizacao l WHERE l.animal.id = :animalId ORDER BY l.timestamp DESC",
+                    Localizacao.class);
+            query.setParameter("animalId", animal.getId());
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        resultado.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
-        return resultado;
     }
 
     public List<Localizacao> buscarUltimasPosicoes(int quantidade) {
-        List<Localizacao> copia = new ArrayList<>(historico);
-        copia.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
-        return copia.subList(0, Math.min(quantidade, copia.size()));
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "FROM Localizacao l ORDER BY l.timestamp DESC", Localizacao.class)
+                    .setMaxResults(quantidade)
+                    .list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    public int totalRegistros() { return historico.size(); }
+    public int totalRegistros() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT COUNT(l) FROM Localizacao l", Long.class)
+                    .uniqueResult().intValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
