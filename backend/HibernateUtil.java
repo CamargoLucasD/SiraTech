@@ -13,7 +13,7 @@ public class HibernateUtil {
                 Configuration config = new Configuration();
                 config.configure("hibernate.cfg.xml");
 
-                // Registrar todas as entidades
+                // Entidades existentes
                 config.addAnnotatedClass(Animal.class);
                 config.addAnnotatedClass(Colar.class);
                 config.addAnnotatedClass(Localizacao.class);
@@ -21,6 +21,11 @@ public class HibernateUtil {
                 config.addAnnotatedClass(Fazenda.class);
                 config.addAnnotatedClass(Alerta.class);
                 config.addAnnotatedClass(Usuario.class);
+
+                // Novas entidades
+                config.addAnnotatedClass(Vacina.class);
+                config.addAnnotatedClass(HistoricoVet.class);
+                config.addAnnotatedClass(Transacao.class);
 
                 sessionFactory = config.buildSessionFactory();
             } catch (Exception e) {
