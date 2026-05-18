@@ -1,6 +1,7 @@
 package frontend;
 
 import backend.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -15,6 +16,9 @@ public class LoginScreen extends JPanel {
     private final MainFrame mainFrame;
     private final Backend   backend;
 
+    // Imagem de fundo carregada uma única vez
+    private BufferedImage imgFundo;
+
     // Timeout de sessão: 30 minutos
     private static final long TIMEOUT_MS = 30 * 60 * 1000L;
     static long ultimaAtividade = System.currentTimeMillis();
@@ -22,9 +26,25 @@ public class LoginScreen extends JPanel {
     public static void registrarAtividade() { ultimaAtividade = System.currentTimeMillis(); }
     public static boolean sessaoExpirou()   { return System.currentTimeMillis() - ultimaAtividade > TIMEOUT_MS; }
 
+    // ── helper de ícone ──────────────────────────────────────────────────────
+    private static FlatSVGIcon ico(String name, int size) {
+        try {
+            return new FlatSVGIcon("icons/" + name + ".svg", size, size);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public LoginScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
         this.backend   = backend;
+
+        // Carrega imagem de fundo uma única vez
+        try {
+            File f = new File("resources/imagens/fundologin.jpeg");
+            if (f.exists()) imgFundo = ImageIO.read(f);
+        } catch (Exception ignored) {}
+
         setLayout(new GridBagLayout());
         setOpaque(false);
         add(criarBox());
@@ -37,19 +57,15 @@ public class LoginScreen extends JPanel {
         g2.setColor(Tema.BG);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        // Imagem de fundo opcional
-        try {
-            File f = new File("resources/imagens/fundologin.jpeg");
-            if (f.exists()) {
-                BufferedImage img = ImageIO.read(f);
-                int sz = Math.min(getWidth(), getHeight()) * 3 / 4;
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.08f));
-                g2.drawImage(img, (getWidth()-sz)/2, (getHeight()-sz)/2, sz, sz, null);
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-            }
-        } catch (Exception ignored) {}
+        // Imagem de fundo — usa cache carregado no construtor
+        if (imgFundo != null) {
+            int sz = Math.min(getWidth(), getHeight()) * 3 / 4;
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.08f));
+            g2.drawImage(imgFundo, (getWidth()-sz)/2, (getHeight()-sz)/2, sz, sz, null);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        }
 
-        // Círculos decorativos
+        // Círculos decorativos — lógica original preservada
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.07f));
         g2.setColor(Tema.GREEN);
         g2.fillOval(-120, -120, 500, 500);
@@ -76,115 +92,147 @@ public class LoginScreen extends JPanel {
         box.setMaximumSize(new Dimension(400, 520));
         box.setBorder(BorderFactory.createEmptyBorder(36, 40, 36, 40));
 
-        // Logo e título
+        // ── Logo e título ─────────────────────────────────────────────────────
         JPanel logoP = new JPanel();
         logoP.setOpaque(false);
         logoP.setLayout(new BoxLayout(logoP, BoxLayout.Y_AXIS));
+
         JLabel logo = carregarLogo();
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoP.add(logo);
         logoP.add(Box.createVerticalStrut(12));
+
         JLabel titulo = Tema.criarLabel("SIRATECH", new Font("Segoe UI", Font.BOLD, 24), Tema.CYAN);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoP.add(titulo);
-        JLabel sub = Tema.criarLabel("SISTEMA DE RASTREAMENTO AGRO", Tema.F_SMALL, Tema.TEXT3);
+
+        JLabel sub = Tema.criarLabel("SISTEMA INTEGRADO DE RASTREAMENTO AGRO", Tema.F_SMALL, Tema.TEXT3);
         sub.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoP.add(sub);
+
         box.add(logoP);
         box.add(Box.createVerticalStrut(20));
 
-        JSeparator sep = new JSeparator();
-        sep.setForeground(Tema.BORDER);
-        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        // Separador
+        JSeparator sep = Tema.criarSeparador();
         box.add(sep);
         box.add(Box.createVerticalStrut(18));
 
+        // ── Formulário com GridBagLayout ──────────────────────────────────────
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        formPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill    = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.gridx   = 0;
+        gbc.insets  = new Insets(0, 0, 0, 0);
+
+        // Label usuário
+        JPanel lUsuarioRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        lUsuarioRow.setOpaque(false);
+        JLabel icoUser = new JLabel(ico("users", 12));
+        lUsuarioRow.add(icoUser);
+        lUsuarioRow.add(Tema.criarLabel("USUÁRIO", Tema.F_SMALL, Tema.TEXT3));
+        gbc.gridy = 0; gbc.insets = new Insets(0, 0, 4, 0);
+        formPanel.add(lUsuarioRow, gbc);
+
         // Campo usuário
-        JLabel lU = Tema.criarLabel("USUÁRIO", Tema.F_SMALL, Tema.TEXT3);
-        lU.setAlignmentX(Component.LEFT_ALIGNMENT);
-        box.add(lU);
-        box.add(Box.createVerticalStrut(5));
         campoUsuario = Tema.criarCampo("");
-        campoUsuario.setText("");
-        campoUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        campoUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
-        box.add(campoUsuario);
-        box.add(Box.createVerticalStrut(12));
+        campoUsuario.setPreferredSize(new Dimension(300, 38));
+        gbc.gridy = 1; gbc.insets = new Insets(0, 0, 12, 0);
+        formPanel.add(campoUsuario, gbc);
 
-        // Campo senha + olho
-        JLabel lS = Tema.criarLabel("SENHA", Tema.F_SMALL, Tema.TEXT3);
-        lS.setAlignmentX(Component.LEFT_ALIGNMENT);
-        box.add(lS);
-        box.add(Box.createVerticalStrut(5));
+        // Label senha
+        JPanel lSenhaRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        lSenhaRow.setOpaque(false);
+        JLabel icoLock = new JLabel(ico("lock", 12));
+        lSenhaRow.add(icoLock);
+        lSenhaRow.add(Tema.criarLabel("SENHA", Tema.F_SMALL, Tema.TEXT3));
+        gbc.gridy = 2; gbc.insets = new Insets(0, 0, 4, 0);
+        formPanel.add(lSenhaRow, gbc);
 
-        JPanel senhaRow = new JPanel(new BorderLayout());
+        // Campo senha + botão olho
+        JPanel senhaRow = new JPanel(new BorderLayout(0, 0));
         senhaRow.setOpaque(false);
-        senhaRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        senhaRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        senhaRow.setPreferredSize(new Dimension(300, 38));
         campoSenha = Tema.criarSenha();
         senhaRow.add(campoSenha, BorderLayout.CENTER);
 
-        JButton olho = new JButton("👁");
-        olho.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        // Botão olho — sem emoji, com ícone SVG de busca como toggle visual
+        JButton olho = new JButton();
+        olho.setIcon(ico("search", 13));
+        olho.setFont(Tema.F_SMALL);
         olho.setBackground(Tema.BG3);
         olho.setForeground(Tema.TEXT3);
         olho.setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
         Tema.semFoco(olho);
         olho.setPreferredSize(new Dimension(38, 38));
         olho.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        olho.setToolTipText("Mostrar / ocultar senha");
         final boolean[] visivel = {false};
         olho.addActionListener(e -> {
             visivel[0] = !visivel[0];
             campoSenha.setEchoChar(visivel[0] ? (char) 0 : '●');
+            olho.setBackground(visivel[0] ? new Color(26, 61, 28) : Tema.BG3);
             olho.setForeground(visivel[0] ? Tema.GREEN3 : Tema.TEXT3);
         });
         senhaRow.add(olho, BorderLayout.EAST);
-        box.add(senhaRow);
-        box.add(Box.createVerticalStrut(8));
+        gbc.gridy = 3; gbc.insets = new Insets(0, 0, 8, 0);
+        formPanel.add(senhaRow, gbc);
 
-        // Label de erro
+        // Label erro — sem ícone hardcoded, texto limpo
         lblErro = Tema.criarLabel("", Tema.F_SMALL, Tema.RED);
-        lblErro.setAlignmentX(Component.LEFT_ALIGNMENT);
-        box.add(lblErro);
-        box.add(Box.createVerticalStrut(10));
+        gbc.gridy = 4; gbc.insets = new Insets(0, 0, 10, 0);
+        formPanel.add(lblErro, gbc);
 
-        // Botão entrar
-        JButton btnLogin = Tema.criarBotaoPrimario("ENTRAR NO SISTEMA  →");
-        btnLogin.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        // ── Botão entrar com ícone lock ───────────────────────────────────────
+        JButton btnLogin = Tema.criarBotaoPrimario("ENTRAR NO SISTEMA");
+        btnLogin.setIcon(ico("lock", 14));
+        btnLogin.setIconTextGap(8);
+        btnLogin.setPreferredSize(new Dimension(300, 42));
         btnLogin.addActionListener(e -> realizarLogin());
-        box.add(btnLogin);
-        box.add(Box.createVerticalStrut(10));
+        gbc.gridy = 5; gbc.insets = new Insets(0, 0, 10, 0);
+        formPanel.add(btnLogin, gbc);
 
-        // Criar conta
-        JButton btnConta = new JButton("+ Criar nova conta");
+        // ── Botão criar conta ─────────────────────────────────────────────────
+        JButton btnConta = new JButton("Criar nova conta");
         btnConta.setFont(Tema.F_SMALL);
         btnConta.setForeground(Tema.TEXT3);
         btnConta.setContentAreaFilled(false);
         btnConta.setBorderPainted(false);
+        btnConta.setHorizontalAlignment(SwingConstants.CENTER);
         Tema.semFoco(btnConta);
         btnConta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnConta.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnConta.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnConta.setForeground(Tema.GREENL); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnConta.setForeground(Tema.TEXT3);  }
+        });
         btnConta.addActionListener(e -> abrirCadastro());
-        box.add(btnConta);
+        gbc.gridy = 6; gbc.insets = new Insets(0, 0, 0, 0);
+        formPanel.add(btnConta, gbc);
 
-        // Enter no campo de senha também faz login
+        box.add(formPanel);
+
+        // Enter no campo de senha também faz login — lógica original preservada
         campoSenha.addActionListener(e -> realizarLogin());
         campoUsuario.addActionListener(e -> campoSenha.requestFocus());
         return box;
     }
 
+    // ── lógica original — não alterada ────────────────────────────────────────
+
     private void realizarLogin() {
         String u = campoUsuario.getText().trim();
         String s = new String(campoSenha.getPassword()).trim();
         if (u.isEmpty() || s.isEmpty()) {
+            lblErro.setForeground(Tema.AMBER);
             lblErro.setText("Preencha usuário e senha!");
             return;
         }
 
-        // Mostra feedback visual de loading
-        lblErro.setText("Verificando...");
         lblErro.setForeground(Tema.TEXT3);
+        lblErro.setText("Verificando...");
 
         String result = backend.authService.tentarLogin(u, s);
         if ("OK".equals(result)) {
@@ -198,11 +246,11 @@ public class LoginScreen extends JPanel {
         } else if (result.startsWith("BLOQUEADO:")) {
             long seg = Long.parseLong(result.split(":")[1]);
             lblErro.setForeground(Tema.RED);
-            lblErro.setText("⛔ Conta bloqueada por " + (seg/60) + "min " + (seg%60) + "s");
+            lblErro.setText("Conta bloqueada por " + (seg / 60) + "min " + (seg % 60) + "s");
         } else if (result.startsWith("FALHA:")) {
             int rest = Integer.parseInt(result.split(":")[1]);
             lblErro.setForeground(Tema.RED);
-            lblErro.setText("✗ Senha incorreta. " + rest + " tentativa(s) restante(s)");
+            lblErro.setText("Senha incorreta. " + rest + " tentativa(s) restante(s)");
             campoSenha.setText("");
         }
     }
@@ -212,10 +260,10 @@ public class LoginScreen extends JPanel {
         form.setBackground(Tema.BG);
         JTextField cL = Tema.criarCampo(""), cN = Tema.criarCampo(""), cS = Tema.criarCampo("");
         JComboBox<String> cP = Tema.criarCombo("Operador", "Administrador");
-        form.add(Tema.criarLabel("LOGIN:",        Tema.F_SMALL, Tema.TEXT3)); form.add(cL);
-        form.add(Tema.criarLabel("NOME COMPLETO:",Tema.F_SMALL, Tema.TEXT3)); form.add(cN);
-        form.add(Tema.criarLabel("SENHA:",        Tema.F_SMALL, Tema.TEXT3)); form.add(cS);
-        form.add(Tema.criarLabel("PERFIL:",       Tema.F_SMALL, Tema.TEXT3)); form.add(cP);
+        form.add(Tema.criarLabel("LOGIN:",         Tema.F_SMALL, Tema.TEXT3)); form.add(cL);
+        form.add(Tema.criarLabel("NOME COMPLETO:", Tema.F_SMALL, Tema.TEXT3)); form.add(cN);
+        form.add(Tema.criarLabel("SENHA:",         Tema.F_SMALL, Tema.TEXT3)); form.add(cS);
+        form.add(Tema.criarLabel("PERFIL:",        Tema.F_SMALL, Tema.TEXT3)); form.add(cP);
         if (JOptionPane.showConfirmDialog(this, form, "Criar Conta",
                 JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             String login = cL.getText().trim(), nome = cN.getText().trim(), senha = cS.getText().trim();
@@ -227,7 +275,7 @@ public class LoginScreen extends JPanel {
                     login, senha, cP.getSelectedItem().toString(),
                     nome.isEmpty() ? login : nome);
             if (ok) JOptionPane.showMessageDialog(this, "Conta criada! Faça login.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            else    JOptionPane.showMessageDialog(this, "Login já existe!", "Erro", JOptionPane.ERROR_MESSAGE);
+            else    JOptionPane.showMessageDialog(this, "Login já existe!", "Erro",   JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -240,7 +288,8 @@ public class LoginScreen extends JPanel {
                 return new JLabel(new ImageIcon(img.getScaledInstance(110, 110, Image.SCALE_SMOOTH)));
             }
         } catch (Exception ignored) {}
-        // Logo vetorial fallback
+
+        // Logo vetorial fallback — lógica original preservada
         JLabel l = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {

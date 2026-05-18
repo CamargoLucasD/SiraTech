@@ -1,6 +1,7 @@
 package frontend;
 
 import backend.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
 import java.io.*;
 import java.util.List;
@@ -11,6 +12,15 @@ public class ConfigScreen extends JPanel {
 
     private final Backend   backend;
     private final MainFrame mainFrame;
+
+    // ─── Ícones FlatLaf ───────────────────────────────────────────────────────
+    private static FlatSVGIcon ico(String name, int size) {
+    try {
+        return new FlatSVGIcon("icons/" + name + ".svg", size, size);
+    } catch (Exception e) {
+        return null;
+    }
+}
 
     public ConfigScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
@@ -23,12 +33,12 @@ public class ConfigScreen extends JPanel {
 
     private JPanel criarConteudo() {
         JTabbedPane abas = Tema.criarAbas();
-        abas.addTab("⚙ SISTEMA",        criarAbaSistema());
-        abas.addTab("👥 USUÁRIOS",       criarAbaUsuarios());
-        abas.addTab("🔒 SEGURANÇA",      criarAbaSeguranca());
-        abas.addTab("🔔 NOTIFICAÇÕES",   criarAbaNotif());
-        abas.addTab("📋 LOG ATIVIDADES", criarAbaLog());
-        abas.addTab("🗄 BANCO DE DADOS", criarAbaBanco());
+        abas.addTab("SISTEMA",        ico("settings", 14),        criarAbaSistema());
+        abas.addTab("USUÁRIOS",       ico("users", 14),           criarAbaUsuarios());
+        abas.addTab("SEGURANÇA",      ico("lock", 14),            criarAbaSeguranca());
+        abas.addTab("NOTIFICAÇÕES",   ico("bell", 14),            criarAbaNotif());
+        abas.addTab("LOG ATIVIDADES", ico("clipboard-list", 14),  criarAbaLog());
+        abas.addTab("BANCO DE DADOS", ico("database", 14),        criarAbaBanco());
 
         JPanel c = new JPanel(new BorderLayout());
         c.setBackground(Tema.BG);
@@ -36,10 +46,23 @@ public class ConfigScreen extends JPanel {
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(Tema.BG);
         h.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
-        h.add(Tema.criarLabel("CONFIGURAÇÕES DO SISTEMA", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
-        if (!backend.authService.isAdmin())
-            h.add(Tema.criarLabel("⚠ Acesso limitado — ADM requerido para algumas funções",
-                    Tema.F_SMALL, Tema.AMBER), BorderLayout.EAST);
+
+        // Título com ícone
+        JPanel titulo = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        titulo.setBackground(Tema.BG);
+        JLabel icoTitulo = new JLabel(ico("settings", 20));
+        titulo.add(icoTitulo);
+        titulo.add(Tema.criarLabel("CONFIGURAÇÕES DO SISTEMA", Tema.F_TITLE, Tema.GREENL));
+        h.add(titulo, BorderLayout.WEST);
+
+        if (!backend.authService.isAdmin()) {
+            JPanel avisoPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+            avisoPanel.setBackground(Tema.BG);
+            avisoPanel.add(new JLabel(ico("alert-triangle", 14)));
+            avisoPanel.add(Tema.criarLabel("Acesso limitado — ADM requerido para algumas funções",
+                    Tema.F_SMALL, Tema.AMBER));
+            h.add(avisoPanel, BorderLayout.EAST);
+        }
 
         c.add(h, BorderLayout.NORTH);
         c.add(abas, BorderLayout.CENTER);
@@ -54,7 +77,12 @@ public class ConfigScreen extends JPanel {
 
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("◈ CONFIGURAÇÕES GERAIS", Tema.F_LABEL, Tema.TEXT3));
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("settings", 14)));
+        secHeader.add(Tema.criarLabel("CONFIGURAÇÕES GERAIS", Tema.F_LABEL, Tema.TEXT3));
+        card.add(secHeader);
         card.add(Box.createVerticalStrut(10));
 
         JTextField cNome    = Tema.criarCampo("SIRATECH");    cNome.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
@@ -81,12 +109,16 @@ public class ConfigScreen extends JPanel {
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         botoes.setBackground(Tema.CARD);
-        JButton bSalvar = Tema.criarBotaoPrimario("✔ SALVAR");
+
+        JButton bSalvar = Tema.criarBotaoPrimario("SALVAR");
+        bSalvar.setIcon(ico("save", 14));
         bSalvar.addActionListener(e -> {
             LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Alterou configurações gerais");
             JOptionPane.showMessageDialog(this, "Configurações salvas!", "OK", JOptionPane.INFORMATION_MESSAGE);
         });
-        JButton bReset = Tema.criarBotaoSecundario("↺ RESTAURAR PADRÕES");
+
+        JButton bReset = Tema.criarBotaoSecundario("RESTAURAR PADRÕES");
+        bReset.setIcon(ico("rotate-ccw", 14));
         bReset.addActionListener(e -> {
             cNome.setText("SIRATECH");
             cLimBat.setText("20");
@@ -95,6 +127,7 @@ public class ConfigScreen extends JPanel {
             cIdioma.setSelectedIndex(0);
             cTema.setSelectedIndex(0);
         });
+
         botoes.add(bSalvar); botoes.add(bReset);
         card.add(botoes);
         p.add(card, BorderLayout.NORTH);
@@ -108,8 +141,11 @@ public class ConfigScreen extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
         if (!backend.authService.isAdmin()) {
-            p.add(Tema.criarLabel("⚠ Apenas administradores podem gerenciar usuários.", Tema.F_BODY, Tema.AMBER),
-                    BorderLayout.NORTH);
+            JPanel aviso = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+            aviso.setBackground(Tema.BG);
+            aviso.add(new JLabel(ico("alert-triangle", 14)));
+            aviso.add(Tema.criarLabel("Apenas administradores podem gerenciar usuários.", Tema.F_BODY, Tema.AMBER));
+            p.add(aviso, BorderLayout.NORTH);
             return p;
         }
 
@@ -124,13 +160,19 @@ public class ConfigScreen extends JPanel {
 
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
-        card.add(Tema.criarLabel("◈ USUÁRIOS DO SISTEMA", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("users", 14)));
+        secHeader.add(Tema.criarLabel("USUÁRIOS DO SISTEMA", Tema.F_LABEL, Tema.TEXT3));
+        card.add(secHeader, BorderLayout.NORTH);
         card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
 
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.CARD);
 
-        JButton btnNovo = Tema.criarBotaoPrimario("+ NOVO USUÁRIO");
+        JButton btnNovo = Tema.criarBotaoPrimario("NOVO USUÁRIO");
+        btnNovo.setIcon(ico("user-plus", 14));
         btnNovo.addActionListener(e -> {
             JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
             form.setBackground(Tema.BG);
@@ -157,46 +199,7 @@ public class ConfigScreen extends JPanel {
             }
         });
 
-        JButton btnEdit = Tema.criarBotaoCyan("✎ EDITAR SENHA");
-        btnEdit.addActionListener(e -> {
-            int row = tabela.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione um usuário!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-            String login = m.getValueAt(row, 0).toString();
-            JPasswordField pf = Tema.criarSenha();
-
-            JPanel senhaPanel = new JPanel(new BorderLayout(0, 6));
-            senhaPanel.setBackground(Tema.BG);
-            senhaPanel.add(Tema.criarLabel("Nova senha para: " + login, Tema.F_SMALL, Tema.TEXT3), BorderLayout.NORTH);
-            senhaPanel.add(pf, BorderLayout.CENTER);
-
-            if (JOptionPane.showConfirmDialog(this, senhaPanel, "Alterar Senha", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-                String novaSenha = new String(pf.getPassword()).trim();
-                if (novaSenha.isEmpty()) { JOptionPane.showMessageDialog(this, "Senha não pode ser vazia!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-                backend.authService.alterarSenha(login, novaSenha);
-                LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Alterou senha de: " + login);
-                JOptionPane.showMessageDialog(this, "Senha alterada!", "OK", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-
-        JButton btnDes = Tema.criarBotaoPerigo("DESATIVAR");
-        btnDes.addActionListener(e -> {
-            int row = tabela.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione um usuário!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-            String login = m.getValueAt(row, 0).toString();
-            if (login.equals(backend.authService.getUsuarioLogado())) {
-                JOptionPane.showMessageDialog(this, "Não pode desativar o próprio usuário!", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            if (JOptionPane.showConfirmDialog(this, "Desativar usuário \"" + login + "\"?",
-                    "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                Usuario u = backend.authService.listarUsuarios().get(row);
-                backend.authService.desativarUsuario(u.getId());
-                m.setValueAt("✘ Não", row, 3);
-                LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Desativou usuário: " + login);
-            }
-        });
-
-        acoes.add(btnNovo); acoes.add(btnEdit); acoes.add(btnDes);
+        acoes.add(btnNovo);
         card.add(acoes, BorderLayout.SOUTH);
         p.add(card, BorderLayout.CENTER);
         return p;
@@ -210,29 +213,36 @@ public class ConfigScreen extends JPanel {
 
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("◈ CONFIGURAÇÕES DE SEGURANÇA", Tema.F_LABEL, Tema.TEXT3));
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("lock", 14)));
+        secHeader.add(Tema.criarLabel("CONFIGURAÇÕES DE SEGURANÇA", Tema.F_LABEL, Tema.TEXT3));
+        card.add(secHeader);
         card.add(Box.createVerticalStrut(10));
 
-        JTextField cMaxTent  = Tema.criarCampo("5");         cMaxTent.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        JTextField cBloquear = Tema.criarCampo("5 minutos"); cBloquear.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        JCheckBox chkLog     = criarCheck("Registrar tentativas de login falhas", true);
-        JCheckBox chkTimeout = criarCheck("Expirar sessão por inatividade (30 min)", true);
-        JCheckBox chkSenha   = criarCheck("Exigir senha forte (mín. 8 caracteres)", false);
+        JTextField cSenhaAtual = Tema.criarCampo(""); cSenhaAtual.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        JTextField cNovaSenha  = Tema.criarCampo(""); cNovaSenha.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        JTextField cConfSenha  = Tema.criarCampo(""); cConfSenha.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
-        card.add(Tema.criarLabel("MÁXIMO DE TENTATIVAS DE LOGIN", Tema.F_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(4)); card.add(cMaxTent); card.add(Box.createVerticalStrut(10));
-        card.add(Tema.criarLabel("TEMPO DE BLOQUEIO", Tema.F_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(4)); card.add(cBloquear); card.add(Box.createVerticalStrut(12));
-        card.add(chkLog); card.add(Box.createVerticalStrut(6));
-        card.add(chkTimeout); card.add(Box.createVerticalStrut(6));
-        card.add(chkSenha); card.add(Box.createVerticalStrut(14));
+        card.add(Tema.criarLabel("SENHA ATUAL", Tema.F_SMALL, Tema.TEXT3));
+        card.add(Box.createVerticalStrut(4)); card.add(cSenhaAtual); card.add(Box.createVerticalStrut(10));
+        card.add(Tema.criarLabel("NOVA SENHA", Tema.F_SMALL, Tema.TEXT3));
+        card.add(Box.createVerticalStrut(4)); card.add(cNovaSenha); card.add(Box.createVerticalStrut(10));
+        card.add(Tema.criarLabel("CONFIRMAR NOVA SENHA", Tema.F_SMALL, Tema.TEXT3));
+        card.add(Box.createVerticalStrut(4)); card.add(cConfSenha); card.add(Box.createVerticalStrut(14));
 
-        JButton bSalvar = Tema.criarBotaoPrimario("✔ SALVAR");
-        bSalvar.addActionListener(e -> {
-            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Alterou configurações de segurança");
-            JOptionPane.showMessageDialog(this, "Configurações de segurança salvas!", "OK", JOptionPane.INFORMATION_MESSAGE);
+        JButton bAlterarSenha = Tema.criarBotaoPrimario("ALTERAR SENHA");
+        bAlterarSenha.setIcon(ico("key", 14));
+        bAlterarSenha.addActionListener(e -> {
+            if (!cNovaSenha.getText().equals(cConfSenha.getText())) {
+                JOptionPane.showMessageDialog(this, "Senhas não conferem!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Alterou senha");
+            JOptionPane.showMessageDialog(this, "Senha alterada com sucesso!", "OK", JOptionPane.INFORMATION_MESSAGE);
         });
-        card.add(bSalvar);
+        card.add(bAlterarSenha);
         p.add(card, BorderLayout.NORTH);
         return p;
     }
@@ -245,7 +255,12 @@ public class ConfigScreen extends JPanel {
 
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("◈ CONFIGURAÇÕES DE NOTIFICAÇÕES", Tema.F_LABEL, Tema.TEXT3));
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("bell", 14)));
+        secHeader.add(Tema.criarLabel("CONFIGURAÇÕES DE NOTIFICAÇÕES", Tema.F_LABEL, Tema.TEXT3));
+        card.add(secHeader);
         card.add(Box.createVerticalStrut(10));
 
         JCheckBox chkFora    = criarCheck("Alerta quando animal sair do geofence", true);
@@ -263,7 +278,8 @@ public class ConfigScreen extends JPanel {
         card.add(Tema.criarLabel("E-MAIL PARA NOTIFICAÇÕES", Tema.F_SMALL, Tema.TEXT3));
         card.add(Box.createVerticalStrut(4)); card.add(cEmail); card.add(Box.createVerticalStrut(14));
 
-        JButton bSalvar = Tema.criarBotaoPrimario("✔ SALVAR");
+        JButton bSalvar = Tema.criarBotaoPrimario("SALVAR");
+        bSalvar.setIcon(ico("save", 14));
         bSalvar.addActionListener(e -> {
             LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Alterou preferências de notificação");
             JOptionPane.showMessageDialog(this, "Preferências de notificação salvas!", "OK", JOptionPane.INFORMATION_MESSAGE);
@@ -278,7 +294,12 @@ public class ConfigScreen extends JPanel {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setBackground(Tema.BG);
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        p.add(Tema.criarLabel("◈ LOG DE ATIVIDADES DO SISTEMA", Tema.F_LABEL, Tema.TEXT3), BorderLayout.NORTH);
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.BG);
+        secHeader.add(new JLabel(ico("clipboard-list", 14)));
+        secHeader.add(Tema.criarLabel("LOG DE ATIVIDADES DO SISTEMA", Tema.F_LABEL, Tema.TEXT3));
+        p.add(secHeader, BorderLayout.NORTH);
 
         DefaultListModel<String> lm = new DefaultListModel<>();
         for (String l : LogAtividades.getLogs()) lm.addElement(l);
@@ -301,9 +322,13 @@ public class ConfigScreen extends JPanel {
 
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.BG);
+
         JButton btnLimpar = Tema.criarBotaoSecundario("LIMPAR LOG");
+        btnLimpar.setIcon(ico("trash-2", 14));
         btnLimpar.addActionListener(e -> lm.clear());
-        JButton btnExport = Tema.criarBotaoSecundario("↓ EXPORTAR LOG");
+
+        JButton btnExport = Tema.criarBotaoSecundario("EXPORTAR LOG");
+        btnExport.setIcon(ico("download", 14));
         btnExport.addActionListener(e -> {
             try {
                 String n = "log_siratech_" + System.currentTimeMillis() + ".txt";
@@ -328,14 +353,22 @@ public class ConfigScreen extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
         if (!backend.authService.isAdmin()) {
-            p.add(Tema.criarLabel("⚠ Apenas administradores podem acessar o banco de dados.", Tema.F_BODY, Tema.AMBER),
-                    BorderLayout.NORTH);
+            JPanel aviso = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+            aviso.setBackground(Tema.BG);
+            aviso.add(new JLabel(ico("alert-triangle", 14)));
+            aviso.add(Tema.criarLabel("Apenas administradores podem acessar o banco de dados.", Tema.F_BODY, Tema.AMBER));
+            p.add(aviso, BorderLayout.NORTH);
             return p;
         }
 
         JPanel card = Tema.criarCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("◈ GERENCIAMENTO DO BANCO DE DADOS", Tema.F_LABEL, Tema.TEXT3));
+
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("database", 14)));
+        secHeader.add(Tema.criarLabel("GERENCIAMENTO DO BANCO DE DADOS", Tema.F_LABEL, Tema.TEXT3));
+        card.add(secHeader);
         card.add(Box.createVerticalStrut(10));
 
         JPanel info = new JPanel(new GridLayout(0, 2, 8, 8));
@@ -351,7 +384,8 @@ public class ConfigScreen extends JPanel {
         JPanel bots = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         bots.setBackground(Tema.CARD);
 
-        JButton btnBackup = Tema.criarBotaoSecundario("↓ BACKUP DO BANCO");
+        JButton btnBackup = Tema.criarBotaoSecundario("BACKUP DO BANCO");
+        btnBackup.setIcon(ico("download", 14));
         btnBackup.addActionListener(e -> {
             try {
                 File src = new File("siratech.db");
@@ -364,7 +398,9 @@ public class ConfigScreen extends JPanel {
                 JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
+
         JButton btnOtimizar = Tema.criarBotaoPrimario("OTIMIZAR");
+        btnOtimizar.setIcon(ico("zap", 14));
         btnOtimizar.addActionListener(e -> {
             LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Otimizou banco de dados");
             JOptionPane.showMessageDialog(this, "Banco otimizado!", "OK", JOptionPane.INFORMATION_MESSAGE);
