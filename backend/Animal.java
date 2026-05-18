@@ -32,6 +32,12 @@ public class Animal {
     @Column(name = "lote")
     private String lote;
 
+    @Column(name = "fazenda_id")
+    private int fazendaId;
+
+    @Column(name = "fazenda_nome")
+    private String fazendaNome;
+
     @Column(name = "status")
     private String status;
 
@@ -72,6 +78,10 @@ public class Animal {
     public void setDataNascimento(LocalDateTime dataNascimento) { this.dataNascimento = dataNascimento; }
     public String getLote() { return lote; }
     public void setLote(String lote) { this.lote = lote; }
+    public int getFazendaId() { return fazendaId; }
+    public void setFazendaId(int fazendaId) { this.fazendaId = fazendaId; }
+    public String getFazendaNome() { return fazendaNome; }
+    public void setFazendaNome(String fazendaNome) { this.fazendaNome = fazendaNome; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getObservacoes() { return observacoes; }
@@ -80,7 +90,5 @@ public class Animal {
     public void setColar(Colar colar) { this.colar = colar; }
 
     @Override
-    public String toString() {
-        return nome + " [" + numeroBrinco + "] - " + raca;
-    }
+    public String toString() { return nome + " [" + numeroBrinco + "] - " + raca; }
 }
