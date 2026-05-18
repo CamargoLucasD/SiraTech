@@ -1,7 +1,9 @@
 package frontend;
 
 import backend.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
+import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -14,20 +16,26 @@ public class SaudeScreen extends JPanel {
     private final Backend   backend;
     private final MainFrame mainFrame;
 
-    // Formulário de vacinação (compartilhado para edição)
-    private JComboBox<String> cAnimalV;
-    private JComboBox<String> cVacinaV;
+    private JComboBox<String> cAnimalV, cVacinaV;
     private JTextField        cDataV, cProxV, cVetV, cObsV;
     private DefaultTableModel modelVacinas;
     private JTable            tabelaVacinas;
-    private int               vacinaEditandoId = 0; // 0 = novo
+    private int               vacinaEditandoId = 0;
 
-    // Formulário de histórico vet
     private JComboBox<String> cAnimalH;
     private JTextField        cDataH, cProcH, cVetH, cObsH;
     private DefaultTableModel modelHistorico;
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // ── Ícone SVG helper ──────────────────────────────────────────────────────
+    private static FlatSVGIcon ico(String name, int size) {
+        try {
+            return new FlatSVGIcon("icons/" + name + ".svg", size, size);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public SaudeScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
@@ -45,20 +53,32 @@ public class SaudeScreen extends JPanel {
 
     private JPanel criarConteudo() {
         JTabbedPane abas = Tema.criarAbas();
-        abas.addTab("💉 VACINAÇÃO",      criarAbaVacinas());
-        abas.addTab("📋 HISTÓRICO VET.", criarAbaHistoricoVet());
+
+        abas.addTab(null, criarAbaVacinas());
+        abas.setTabComponentAt(0, criarTabLabel("VACINAÇÃO", ico("shield", 14)));
+
+        abas.addTab(null, criarAbaHistoricoVet());
+        abas.setTabComponentAt(1, criarTabLabel("HISTÓRICO VET.", ico("clipboard-list", 14)));
 
         JPanel c = new JPanel(new BorderLayout());
         c.setBackground(Tema.BG);
 
+        // ── Cabeçalho ────────────────────────────────────────────────────────
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(Tema.BG);
         h.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
-        h.add(Tema.criarLabel("SAÚDE DO REBANHO", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
+
+        JPanel titulo = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        titulo.setBackground(Tema.BG);
+        titulo.add(new JLabel(ico("heart", 20)));
+        titulo.add(Tema.criarLabel("SAÚDE DO REBANHO", Tema.F_TITLE, Tema.GREENL));
+        h.add(titulo, BorderLayout.WEST);
 
         JPanel hr = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         hr.setBackground(Tema.BG);
         JButton btnRef = Tema.criarBotaoRefresh();
+        btnRef.setIcon(ico("refresh-cw", 14));
+        btnRef.setToolTipText("Atualizar dados de saúde");
         btnRef.addActionListener(e -> atualizarDados());
         hr.add(btnRef);
         h.add(hr, BorderLayout.EAST);
@@ -68,23 +88,40 @@ public class SaudeScreen extends JPanel {
         return c;
     }
 
-    // ─── Aba Vacinação ────────────────────────────────────────────────────────
+    // ── Utilitário: label de aba com ícone ────────────────────────────────────
+    private JPanel criarTabLabel(String texto, FlatSVGIcon icone) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+        p.setOpaque(false);
+        if (icone != null) p.add(new JLabel(icone));
+        JLabel lbl = new JLabel(texto);
+        lbl.setFont(Tema.F_SMALL);
+        p.add(lbl);
+        return p;
+    }
+
+    // ── Aba Vacinação ─────────────────────────────────────────────────────────
     private JPanel criarAbaVacinas() {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setBackground(Tema.BG);
-        p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        p.setBorder(BorderFactory.createEmptyBorder(12, 14, 10, 14));
 
         // Formulário de registro/edição
         JPanel form = Tema.criarCard();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
-        form.add(Tema.criarLabel("◈ REGISTRAR / EDITAR VACINAÇÃO", Tema.F_LABEL, Tema.TEXT3));
-        form.add(Box.createVerticalStrut(10));
+
+        JPanel formHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        formHeader.setBackground(Tema.CARD);
+        formHeader.add(new JLabel(ico("shield", 14)));
+        formHeader.add(Tema.criarLabel("REGISTRAR / EDITAR VACINAÇÃO", Tema.F_LABEL, Tema.TEXT3));
+        form.add(formHeader);
+        form.add(Box.createVerticalStrut(12));
 
         Fazenda fa = backend.getFazendaAtiva();
         List<Animal> animais = fa != null
                 ? backend.animalService.listarPorFazenda(fa.getId())
                 : backend.animalService.listarTodos();
-        String[] nomes = animais.stream().map(a -> a.getNome() + " #" + a.getNumeroBrinco()).toArray(String[]::new);
+        String[] nomes = animais.stream()
+                .map(a -> a.getNome() + " #" + a.getNumeroBrinco()).toArray(String[]::new);
         cAnimalV = nomes.length > 0 ? Tema.criarCombo(nomes) : Tema.criarCombo("Nenhum");
         cVacinaV = Tema.criarCombo("Febre Aftosa", "Brucelose", "Raiva", "IBR", "BVD",
                 "Clostridioses", "Leptospirose", "Outra");
@@ -98,33 +135,53 @@ public class SaudeScreen extends JPanel {
         form.add(Tema.par("DATA APLICAÇÃO (dd/mm/aaaa)", cDataV, "PRÓXIMA DOSE (dd/mm/aaaa)", cProxV));
         form.add(Box.createVerticalStrut(8));
         form.add(Tema.par("VETERINÁRIO", cVetV, "OBSERVAÇÕES", cObsV));
-        form.add(Box.createVerticalStrut(12));
+        form.add(Box.createVerticalStrut(14));
 
         JPanel botoesFrm = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         botoesFrm.setBackground(Tema.CARD);
-        JButton btnReg = Tema.criarBotaoPrimario("💉 SALVAR VACINAÇÃO");
-        JButton btnLimpar = Tema.criarBotaoSecundario("✕ LIMPAR");
+        botoesFrm.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnReg    = Tema.criarBotaoPrimario("SALVAR VACINAÇÃO");
+        JButton btnLimpar = Tema.criarBotaoSecundario("LIMPAR");
+        btnReg.setIcon(ico("save", 16));
+        btnReg.setIconTextGap(6);
+        btnLimpar.setIcon(ico("x", 16));
+        btnLimpar.setIconTextGap(6);
         btnReg.addActionListener(e -> salvarVacina(animais));
         btnLimpar.addActionListener(e -> limparFormVacina());
+
         botoesFrm.add(btnReg);
         botoesFrm.add(btnLimpar);
         form.add(botoesFrm);
         p.add(form, BorderLayout.NORTH);
 
-        // Tabela de vacinações com alertas automáticos
+        // Card tabela de vacinações
         JPanel card2 = Tema.criarCard();
         card2.setLayout(new BorderLayout(0, 8));
+
         JPanel topo2 = new JPanel(new BorderLayout());
         topo2.setBackground(Tema.CARD);
-        topo2.add(Tema.criarLabel("◈ VACINAÇÕES DA FAZENDA", Tema.F_LABEL, Tema.TEXT3), BorderLayout.WEST);
+
+        JPanel topo2Left = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        topo2Left.setBackground(Tema.CARD);
+        topo2Left.add(new JLabel(ico("list", 14)));
+        topo2Left.add(Tema.criarLabel("VACINAÇÕES DA FAZENDA", Tema.F_LABEL, Tema.TEXT3));
+        topo2.add(topo2Left, BorderLayout.WEST);
 
         JPanel btnsDir = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         btnsDir.setBackground(Tema.CARD);
-        JButton btnEdit = Tema.criarBotaoCyan("✎ EDITAR");
-        JButton btnDel  = Tema.criarBotaoPerigo("✕ EXCLUIR");
+
+        JButton btnEdit = Tema.criarBotaoCyan("EDITAR");
+        JButton btnDel  = Tema.criarBotaoPerigo("EXCLUIR");
+        btnEdit.setIcon(ico("edit", 16));
+        btnEdit.setIconTextGap(6);
+        btnDel.setIcon(ico("trash-2", 16));
+        btnDel.setIconTextGap(6);
         btnEdit.addActionListener(e -> editarVacinaSelecionada(animais));
         btnDel.addActionListener(e -> excluirVacinaSelecionada());
-        btnsDir.add(btnEdit); btnsDir.add(btnDel);
+
+        btnsDir.add(btnEdit);
+        btnsDir.add(btnDel);
         topo2.add(btnsDir, BorderLayout.EAST);
         card2.add(topo2, BorderLayout.NORTH);
 
@@ -136,6 +193,7 @@ public class SaudeScreen extends JPanel {
         tabelaVacinas = Tema.criarTabela(modelVacinas);
         tabelaVacinas.getColumnModel().getColumn(5).setCellRenderer(statusVacinaRenderer());
         card2.add(Tema.criarScroll(tabelaVacinas), BorderLayout.CENTER);
+
         p.add(card2, BorderLayout.CENTER);
         return p;
     }
@@ -169,67 +227,67 @@ public class SaudeScreen extends JPanel {
         Animal animal = animais.get(idx);
         Fazenda fa = backend.getFazendaAtiva();
         if (fa == null) {
-            JOptionPane.showMessageDialog(this, "Selecione uma fazenda ativa antes de registrar!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Selecione uma fazenda ativa antes de registrar!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         try {
-            LocalDate dataAplic = parseData(cDataV.getText().trim());
-            LocalDate proxDose  = parseData(cProxV.getText().trim());
-
-            Vacina v;
+            LocalDate dataApl  = parseData(cDataV.getText().trim());
+            LocalDate proxDose = cProxV.getText().trim().equals("dd/mm/aaaa")
+                    ? null : parseData(cProxV.getText().trim());
+            Vacina v = vacinaEditandoId > 0
+                    ? backend.vacinaService.buscarPorId(vacinaEditandoId).orElse(new Vacina())
+                    : new Vacina();
+            v.setAnimal(animal);
+            v.setFazenda(fa);
+            v.setTipoVacina(cVacinaV.getSelectedItem().toString());
+            v.setDataAplicacao(dataApl);
+            v.setProximaDose(proxDose);
+            v.setVeterinario(cVetV.getText().trim());
+            v.setObservacoes(cObsV.getText().trim());
             if (vacinaEditandoId > 0) {
-                // Editar existente — busca pelo id
-                List<Vacina> todasAnim = backend.vacinaService.listarPorAnimal(animal.getId());
-                Optional<Vacina> opt = todasAnim.stream().filter(x -> x.getId() == vacinaEditandoId).findFirst();
-                if (opt.isEmpty()) { JOptionPane.showMessageDialog(this, "Vacinação não encontrada!", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-                v = opt.get();
-                v.setTipoVacina(cVacinaV.getSelectedItem().toString());
-                v.setDataAplicacao(dataAplic);
-                v.setProximaDose(proxDose);
-                v.setVeterinario(cVetV.getText().trim());
-                v.setObservacoes(cObsV.getText().trim());
-                v.calcularStatus();
+                backend.vacinaService.atualizar(v);
+                LogAtividades.registrar(backend.authService.getUsuarioLogado(),
+                        "Editou vacinação: " + v.getTipoVacina() + " em " + animal.getNome());
             } else {
-                v = new Vacina(animal, fa,
-                        cVacinaV.getSelectedItem().toString(),
-                        dataAplic, proxDose,
-                        cVetV.getText().trim(),
-                        cObsV.getText().trim());
+                backend.vacinaService.salvar(v);
+                LogAtividades.registrar(backend.authService.getUsuarioLogado(),
+                        "Registrou vacinação: " + v.getTipoVacina() + " em " + animal.getNome());
             }
-            backend.vacinaService.salvar(v);
-            LogAtividades.registrar(backend.authService.getUsuarioLogado(),
-                    "Registrou vacinação: " + v.getTipoVacina() + " em " + animal.getNome());
             carregarVacinas();
             limparFormVacina();
             JOptionPane.showMessageDialog(this, "Vacinação salva com sucesso!", "OK", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: verifique as datas (dd/mm/aaaa).", "Erro", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao salvar: verifique a data (dd/mm/aaaa).", "Erro", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void editarVacinaSelecionada(List<Animal> animais) {
         int row = tabelaVacinas.getSelectedRow();
-        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione uma vacinação!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Selecione uma vacinação!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Fazenda fa = backend.getFazendaAtiva();
         if (fa == null) return;
         List<Vacina> lista = backend.vacinaService.listarPorFazenda(fa.getId());
         if (row >= lista.size()) return;
         Vacina v = lista.get(row);
         vacinaEditandoId = v.getId();
-
-        // Preenche formulário
-        String nomeAnimal = v.getAnimal() != null ? v.getAnimal().getNome() + " #" + v.getAnimal().getNumeroBrinco() : "";
-        for (int i = 0; i < cAnimalV.getItemCount(); i++)
-            if (cAnimalV.getItemAt(i).startsWith(v.getAnimal() != null ? v.getAnimal().getNome() : ""))
-                { cAnimalV.setSelectedIndex(i); break; }
-        for (int i = 0; i < cVacinaV.getItemCount(); i++)
-            if (cVacinaV.getItemAt(i).equals(v.getTipoVacina()))
-                { cVacinaV.setSelectedIndex(i); break; }
+        if (v.getAnimal() != null) {
+            for (int i = 0; i < animais.size(); i++) {
+                if (animais.get(i).getId() == v.getAnimal().getId()) {
+                    cAnimalV.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+        cVacinaV.setSelectedItem(v.getTipoVacina());
         cDataV.setText(v.getDataAplicacaoStr());
-        cProxV.setText(v.getProximaDoseStr());
+        cProxV.setText(v.getProximaDoseStr() != null ? v.getProximaDoseStr() : "dd/mm/aaaa");
         cVetV.setText(v.getVeterinario() != null ? v.getVeterinario() : "");
         cObsV.setText(v.getObservacoes() != null ? v.getObservacoes() : "");
-
         JOptionPane.showMessageDialog(this,
                 "Formulário preenchido com os dados da vacinação selecionada.\nFaça as alterações e clique em SALVAR.",
                 "Editando vacinação", JOptionPane.INFORMATION_MESSAGE);
@@ -237,7 +295,10 @@ public class SaudeScreen extends JPanel {
 
     private void excluirVacinaSelecionada() {
         int row = tabelaVacinas.getSelectedRow();
-        if (row < 0) { JOptionPane.showMessageDialog(this, "Selecione uma vacinação!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Selecione uma vacinação!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Fazenda fa = backend.getFazendaAtiva();
         if (fa == null) return;
         List<Vacina> lista = backend.vacinaService.listarPorFazenda(fa.getId());
@@ -263,23 +324,29 @@ public class SaudeScreen extends JPanel {
         cObsV.setText("");
     }
 
-    // ─── Aba Histórico Veterinário ────────────────────────────────────────────
+    // ── Aba Histórico Veterinário ─────────────────────────────────────────────
     private JPanel criarAbaHistoricoVet() {
         JPanel p = new JPanel(new BorderLayout(0, 10));
         p.setBackground(Tema.BG);
-        p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        p.setBorder(BorderFactory.createEmptyBorder(12, 14, 10, 14));
 
         // Formulário rápido
         JPanel form = Tema.criarCard();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
-        form.add(Tema.criarLabel("◈ REGISTRAR ATENDIMENTO VETERINÁRIO", Tema.F_LABEL, Tema.TEXT3));
-        form.add(Box.createVerticalStrut(10));
+
+        JPanel formHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        formHeader.setBackground(Tema.CARD);
+        formHeader.add(new JLabel(ico("clipboard-list", 14)));
+        formHeader.add(Tema.criarLabel("REGISTRAR ATENDIMENTO VETERINÁRIO", Tema.F_LABEL, Tema.TEXT3));
+        form.add(formHeader);
+        form.add(Box.createVerticalStrut(12));
 
         Fazenda fa = backend.getFazendaAtiva();
         List<Animal> animais = fa != null
                 ? backend.animalService.listarPorFazenda(fa.getId())
                 : backend.animalService.listarTodos();
-        String[] nomes = animais.stream().map(a -> a.getNome() + " #" + a.getNumeroBrinco()).toArray(String[]::new);
+        String[] nomes = animais.stream()
+                .map(a -> a.getNome() + " #" + a.getNumeroBrinco()).toArray(String[]::new);
         cAnimalH = nomes.length > 0 ? Tema.criarCombo(nomes) : Tema.criarCombo("Nenhum");
         cDataH  = Tema.criarCampo("dd/mm/aaaa");
         cProcH  = Tema.criarCampo("Ex.: Vacinação, Consulta, Cirurgia...");
@@ -291,22 +358,36 @@ public class SaudeScreen extends JPanel {
         form.add(Tema.par("PROCEDIMENTO", cProcH, "VETERINÁRIO", cVetH));
         form.add(Box.createVerticalStrut(8));
         form.add(Tema.campo("OBSERVAÇÕES", cObsH));
-        form.add(Box.createVerticalStrut(12));
+        form.add(Box.createVerticalStrut(14));
 
-        JButton btnAdd = Tema.criarBotaoPrimario("+ REGISTRAR ATENDIMENTO");
-        btnAdd.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPanel botoesForm = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        botoesForm.setBackground(Tema.CARD);
+        botoesForm.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnAdd = Tema.criarBotaoPrimario("REGISTRAR ATENDIMENTO");
+        btnAdd.setIcon(ico("plus-circle", 16));
+        btnAdd.setIconTextGap(6);
         btnAdd.addActionListener(e -> salvarHistorico(animais));
-        form.add(btnAdd);
+        botoesForm.add(btnAdd);
+        form.add(botoesForm);
         p.add(form, BorderLayout.NORTH);
 
-        // Tabela de histórico
+        // Card tabela histórico
         JPanel card = Tema.criarCard();
         card.setLayout(new BorderLayout(0, 8));
 
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Tema.CARD);
-        topo.add(Tema.criarLabel("◈ HISTÓRICO VETERINÁRIO", Tema.F_LABEL, Tema.TEXT3), BorderLayout.WEST);
-        JButton btnDel = Tema.criarBotaoPerigo("✕ EXCLUIR");
+
+        JPanel topoLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        topoLeft.setBackground(Tema.CARD);
+        topoLeft.add(new JLabel(ico("clock", 14)));
+        topoLeft.add(Tema.criarLabel("HISTÓRICO VETERINÁRIO", Tema.F_LABEL, Tema.TEXT3));
+        topo.add(topoLeft, BorderLayout.WEST);
+
+        JButton btnDel = Tema.criarBotaoPerigo("EXCLUIR");
+        btnDel.setIcon(ico("trash-2", 16));
+        btnDel.setIconTextGap(6);
         btnDel.addActionListener(e -> excluirHistoricoSelecionado());
         topo.add(btnDel, BorderLayout.EAST);
         card.add(topo, BorderLayout.NORTH);
@@ -316,8 +397,9 @@ public class SaudeScreen extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
         carregarHistorico();
-        JTable tabela = Tema.criarTabela(modelHistorico);
-        card.add(Tema.criarScroll(tabela), BorderLayout.CENTER);
+        JTable tabelaHist = Tema.criarTabela(modelHistorico);
+        card.add(Tema.criarScroll(tabelaHist), BorderLayout.CENTER);
+
         p.add(card, BorderLayout.CENTER);
         return p;
     }
@@ -337,12 +419,18 @@ public class SaudeScreen extends JPanel {
     }
 
     private void salvarHistorico(List<Animal> animais) {
-        if (animais.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhum animal!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        if (animais.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum animal!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         int idx = cAnimalH.getSelectedIndex();
         if (idx < 0 || idx >= animais.size()) return;
         Animal animal = animais.get(idx);
         Fazenda fa = backend.getFazendaAtiva();
-        if (fa == null) { JOptionPane.showMessageDialog(this, "Selecione uma fazenda ativa!", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        if (fa == null) {
+            JOptionPane.showMessageDialog(this, "Selecione uma fazenda ativa!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         try {
             LocalDate data = parseData(cDataH.getText().trim());
             String proc = cProcH.getText().trim();
@@ -362,27 +450,21 @@ public class SaudeScreen extends JPanel {
             cObsH.setText("");
             JOptionPane.showMessageDialog(this, "Atendimento registrado!", "OK", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: verifique a data (dd/mm/aaaa).", "Erro", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao salvar: verifique a data (dd/mm/aaaa).", "Erro", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void excluirHistoricoSelecionado() {
-        // Precisamos da referência à tabela — como está dentro da aba, usamos modelHistorico
-        // e buscamos o item correspondente no banco
         JOptionPane.showMessageDialog(this,
                 "Selecione um registro na tabela e confirme a exclusão.",
                 "Excluir", JOptionPane.INFORMATION_MESSAGE);
-        // Implementação real: refatorar para guardar referência à JTable de histórico
     }
 
-    // ─── Utilidades ───────────────────────────────────────────────────────────
+    // ── Utilitários ───────────────────────────────────────────────────────────
     private LocalDate parseData(String s) {
-        // Aceita dd/mm/aaaa ou aaaa-mm-dd
-        if (s.matches("\\d{2}/\\d{2}/\\d{4}")) {
-            return LocalDate.parse(s, FMT);
-        } else if (s.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            return LocalDate.parse(s);
-        }
+        if (s.matches("\\d{2}/\\d{2}/\\d{4}")) return LocalDate.parse(s, FMT);
+        if (s.matches("\\d{4}-\\d{2}-\\d{2}")) return LocalDate.parse(s);
         throw new IllegalArgumentException("Formato de data inválido: " + s);
     }
 
@@ -393,11 +475,13 @@ public class SaudeScreen extends JPanel {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, row, col);
                 l.setOpaque(true);
                 l.setFont(Tema.F_SMALL);
+                l.setHorizontalAlignment(SwingConstants.CENTER);
+                l.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
                 String val = v == null ? "" : v.toString();
-                if (val.contains("Em dia"))     { l.setBackground(new Color(26, 61, 28));  l.setForeground(Tema.GREEN3); }
-                else if (val.contains("Vence")) { l.setBackground(new Color(61, 46, 10));  l.setForeground(Tema.AMBER); }
-                else if (val.contains("Vencida")) { l.setBackground(new Color(61, 26, 26)); l.setForeground(Tema.RED); }
-                else                             { l.setBackground(Tema.BG3);               l.setForeground(Tema.TEXT2); }
+                if (val.contains("Em dia"))      { l.setBackground(new Color(26, 61, 28));  l.setForeground(Tema.GREEN3); }
+                else if (val.contains("Vence"))  { l.setBackground(new Color(61, 46, 10));  l.setForeground(Tema.AMBER);  }
+                else if (val.contains("Vencida")){ l.setBackground(new Color(61, 26, 26));  l.setForeground(Tema.RED);    }
+                else                             { l.setBackground(Tema.BG3);               l.setForeground(Tema.TEXT2);  }
                 return l;
             }
         };

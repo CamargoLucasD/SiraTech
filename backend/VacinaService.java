@@ -16,6 +16,26 @@ public class VacinaService {
         return vacina;
     }
 
+    public Optional<Vacina> buscarPorId(int id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return Optional.ofNullable(session.get(Vacina.class, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
+    public Vacina atualizar(Vacina vacina) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.merge(vacina);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return vacina;
+    }
+
     public List<Vacina> listarPorFazenda(int fazendaId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Vacina> q = session.createQuery(

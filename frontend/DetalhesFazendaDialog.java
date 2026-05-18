@@ -1,15 +1,20 @@
 package frontend;
 
 import backend.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
 
 public class DetalhesFazendaDialog extends JDialog {
+
+    // ── helper de ícone ──────────────────────────────────────────────────────
+    private static FlatSVGIcon ico(String name, int size) {
+        return new FlatSVGIcon("icons/" + name + ".svg", size, size);
+    }
 
     public DetalhesFazendaDialog(Window owner, Fazenda f, Backend backend) {
         super(owner, "Fazenda: " + f.getNome(), ModalityType.APPLICATION_MODAL);
@@ -19,14 +24,20 @@ public class DetalhesFazendaDialog extends JDialog {
         getContentPane().setBackground(Tema.BG);
         setLayout(new BorderLayout());
 
-        // Header
+        // ── Header ───────────────────────────────────────────────────────────
         JPanel head = new JPanel(new BorderLayout());
         head.setBackground(new Color(20, 44, 22));
         head.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Tema.GREEN, 1),
                 BorderFactory.createEmptyBorder(12, 16, 12, 16)));
-        head.add(Tema.criarLabel("🏠  " + f.getNome(),
-                new Font("Segoe UI", Font.BOLD, 20), Tema.GREENL), BorderLayout.WEST);
+
+        // Título com ícone de database (fazenda/gestão)
+        JLabel lblNome = Tema.criarLabel(f.getNome(),
+                new Font("Segoe UI", Font.BOLD, 20), Tema.GREENL);
+        lblNome.setIcon(ico("database", 22));
+        lblNome.setIconTextGap(10);
+        head.add(lblNome, BorderLayout.WEST);
+
         JPanel badges = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         badges.setOpaque(false);
         if (f.getMunicipio() != null && f.getEstado() != null)
@@ -35,10 +46,10 @@ public class DetalhesFazendaDialog extends JDialog {
         head.add(badges, BorderLayout.EAST);
         add(head, BorderLayout.NORTH);
 
-        // Abas
+        // ── Abas ─────────────────────────────────────────────────────────────
         JTabbedPane abas = Tema.criarAbas();
 
-        // ── Aba Dados ──────────────────────────────────────────────────────
+        // ── Aba DADOS ────────────────────────────────────────────────────────
         JPanel dados = new JPanel(new GridLayout(0, 2, 8, 8));
         dados.setBackground(Tema.BG);
         dados.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -51,17 +62,28 @@ public class DetalhesFazendaDialog extends JDialog {
         int totalAnim = f.getLotes().stream().mapToInt(l -> l.getAnimais().size()).sum();
         addI(dados, "TOTAL ANIMAIS",   String.valueOf(totalAnim));
         addI(dados, "TOTAL LOTES",     String.valueOf(f.getLotes().size()));
-        abas.addTab("📋 DADOS", dados);
 
-        // ── Aba Lotes ──────────────────────────────────────────────────────
+        JLabel tabDados = new JLabel("DADOS");
+        tabDados.setIcon(ico("clipboard-list", 14));
+        tabDados.setIconTextGap(5);
+        abas.addTab(null, dados);
+        abas.setTabComponentAt(0, tabDados);
+
+        // ── Aba LOTES ────────────────────────────────────────────────────────
         JPanel lotesP = new JPanel(new BorderLayout(0, 6));
         lotesP.setBackground(Tema.BG);
         lotesP.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel loteTopo = new JPanel(new BorderLayout());
         loteTopo.setBackground(Tema.BG);
-        loteTopo.add(Tema.criarLabel("Lotes desta fazenda", Tema.F_BODY, Tema.TEXT2), BorderLayout.WEST);
-        JButton btnNL = new JButton("+ Novo Lote");
+        JLabel lblLotes = Tema.criarLabel("Lotes desta fazenda", Tema.F_BODY, Tema.TEXT2);
+        lblLotes.setIcon(ico("filter", 14));
+        lblLotes.setIconTextGap(5);
+        loteTopo.add(lblLotes, BorderLayout.WEST);
+
+        JButton btnNL = new JButton("Novo Lote");
+        btnNL.setIcon(ico("plus-circle", 12));
+        btnNL.setIconTextGap(4);
         btnNL.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         Tema.semFoco(btnNL);
         btnNL.setBackground(new Color(26, 50, 28));
@@ -79,13 +101,15 @@ public class DetalhesFazendaDialog extends JDialog {
             lm.addRow(new Object[]{l.getNome(), l.getAreaHa(), l.getAnimais().size(), l.getStatus()});
         lotesP.add(Tema.criarScroll(Tema.criarTabela(lm)), BorderLayout.CENTER);
 
+        // Listener do botão Novo Lote — lógica original preservada
         btnNL.addActionListener(e -> {
             JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
             form.setBackground(Tema.BG);
             JTextField cN = Tema.criarCampo(""), cA = Tema.criarCampo("");
-            form.add(Tema.criarLabel("NOME:", Tema.F_SMALL, Tema.TEXT3)); form.add(cN);
+            form.add(Tema.criarLabel("NOME:",      Tema.F_SMALL, Tema.TEXT3)); form.add(cN);
             form.add(Tema.criarLabel("ÁREA (HA):", Tema.F_SMALL, Tema.TEXT3)); form.add(cA);
-            if (JOptionPane.showConfirmDialog(this, form, "Novo Lote", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, form, "Novo Lote",
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
                 try {
                     double area = Double.parseDouble(cA.getText().trim());
                     Lote novoLote = new Lote(0, cN.getText().trim(), area);
@@ -104,13 +128,19 @@ public class DetalhesFazendaDialog extends JDialog {
                 }
             }
         });
-        abas.addTab("🌿 LOTES", lotesP);
 
-        // ── Aba Relatório ──────────────────────────────────────────────────
+        JLabel tabLotes = new JLabel("LOTES");
+        tabLotes.setIcon(ico("filter", 14));
+        tabLotes.setIconTextGap(5);
+        abas.addTab(null, lotesP);
+        abas.setTabComponentAt(1, tabLotes);
+
+        // ── Aba RELATÓRIO ────────────────────────────────────────────────────
         JPanel relP = new JPanel(new BorderLayout(0, 6));
         relP.setBackground(Tema.BG);
         relP.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Conteúdo do relatório — lógica original preservada
         StringBuilder sb = new StringBuilder();
         sb.append("=== RELATÓRIO DA FAZENDA ===\n");
         sb.append("Nome:          ").append(f.getNome()).append("\n");
@@ -133,35 +163,51 @@ public class DetalhesFazendaDialog extends JDialog {
         area.setEditable(false);
         relP.add(new JScrollPane(area), BorderLayout.CENTER);
 
-        JButton btnExp = Tema.criarBotaoSecundario("↓ EXPORTAR");
+        // Botão exportar com ícone
+        JButton btnExp = Tema.criarBotaoSecundario("EXPORTAR");
+        btnExp.setIcon(ico("download", 16));
+        btnExp.setIconTextGap(6);
         btnExp.addActionListener(e -> {
             try {
-                String n = "fazenda_" + f.getNome().replace(" ", "_") + "_" + System.currentTimeMillis() + ".txt";
+                String n = "fazenda_" + f.getNome().replace(" ", "_")
+                        + "_" + System.currentTimeMillis() + ".txt";
                 FileWriter fw = new FileWriter(n);
                 fw.write(sb.toString());
                 fw.close();
-                JOptionPane.showMessageDialog(this, "Salvo: " + new File(n).getAbsolutePath(), "OK", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Salvo: " + new File(n).getAbsolutePath(), "OK", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
         JPanel be = new JPanel(new FlowLayout(FlowLayout.LEFT));
         be.setBackground(Tema.BG);
         be.add(btnExp);
         relP.add(be, BorderLayout.SOUTH);
-        abas.addTab("📄 RELATÓRIO", relP);
+
+        JLabel tabRel = new JLabel("RELATÓRIO");
+        tabRel.setIcon(ico("clipboard-list", 14));
+        tabRel.setIconTextGap(5);
+        abas.addTab(null, relP);
+        abas.setTabComponentAt(2, tabRel);
 
         add(abas, BorderLayout.CENTER);
 
+        // ── Rodapé ───────────────────────────────────────────────────────────
         JPanel south = new JPanel(new FlowLayout(FlowLayout.CENTER));
         south.setBackground(Tema.BG);
         JButton btn = Tema.criarBotaoPrimario("FECHAR");
+        btn.setIcon(ico("x", 16));
+        btn.setIconTextGap(6);
         btn.addActionListener(e -> dispose());
         south.add(btn);
         add(south, BorderLayout.SOUTH);
 
         setVisible(true);
     }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
 
     private void addI(JPanel p, String l, String v) {
         JPanel item = new JPanel(new BorderLayout(0, 2));

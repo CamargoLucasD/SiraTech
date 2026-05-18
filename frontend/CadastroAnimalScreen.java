@@ -1,6 +1,7 @@
 package frontend;
 
 import backend.*;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileWriter;
@@ -19,8 +20,16 @@ public class CadastroAnimalScreen extends JPanel {
     private JComboBox<String> comboRaca, comboSexo, comboLote, comboStatus, comboColar, comboFazenda;
     private DefaultTableModel tabelaModel;
     private JTable            tabela;
-    // ID do animal em edição (0 = novo)
     private int editandoId = 0;
+
+    // ─── Ícones FlatLaf ───────────────────────────────────────────────────────
+    private static FlatSVGIcon ico(String name, int size) {
+    try {
+        return new FlatSVGIcon("icons/" + name + ".svg", size, size);
+    } catch (Exception e) {
+        return null;
+    }
+}
 
     public CadastroAnimalScreen(MainFrame frame, Backend backend) {
         this.mainFrame = frame;
@@ -31,14 +40,13 @@ public class CadastroAnimalScreen extends JPanel {
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
-    // Chamado pelo MainFrame ao navegar para esta tela
     public void atualizar() { recarregarTabela(); }
 
     private JPanel criarConteudo() {
         JTabbedPane abas = Tema.criarAbas();
-        abas.addTab("📋 CADASTRO & LISTA", criarAbaLista());
-        abas.addTab("⚖ HISTÓRICO DE PESO", criarAbaPeso());
-        abas.addTab("🔍 FILTROS & BUSCA",  criarAbaFiltros());
+        abas.addTab("CADASTRO & LISTA",  ico("clipboard-list", 14), criarAbaLista());
+        abas.addTab("HISTÓRICO DE PESO", ico("trending-up", 14),    criarAbaPeso());
+        abas.addTab("FILTROS & BUSCA",   ico("filter", 14),         criarAbaFiltros());
 
         JPanel c = new JPanel(new BorderLayout());
         c.setBackground(Tema.BG);
@@ -46,14 +54,25 @@ public class CadastroAnimalScreen extends JPanel {
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(Tema.BG);
         h.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
-        h.add(Tema.criarLabel("GESTÃO DE ANIMAIS", Tema.F_TITLE, Tema.GREENL), BorderLayout.WEST);
+
+        // Título com ícone
+        JPanel titulo = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        titulo.setBackground(Tema.BG);
+        titulo.add(new JLabel(ico("tag", 20)));
+        titulo.add(Tema.criarLabel("GESTÃO DE ANIMAIS", Tema.F_TITLE, Tema.GREENL));
+        h.add(titulo, BorderLayout.WEST);
 
         JPanel hr = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         hr.setBackground(Tema.BG);
+
         JButton btnRefresh = Tema.criarBotaoRefresh();
+        btnRefresh.setIcon(ico("refresh-cw", 14));
         btnRefresh.addActionListener(e -> recarregarTabela());
-        JButton btnNovo = Tema.criarBotaoPrimario("+ NOVO ANIMAL");
+
+        JButton btnNovo = Tema.criarBotaoPrimario("NOVO ANIMAL");
+        btnNovo.setIcon(ico("plus-circle", 14));
         btnNovo.addActionListener(e -> limpar());
+
         hr.add(btnRefresh);
         hr.add(btnNovo);
         h.add(hr, BorderLayout.EAST);
@@ -69,6 +88,7 @@ public class CadastroAnimalScreen extends JPanel {
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
         JPanel grade = new JPanel(new GridLayout(1, 2, 12, 0));
+        grade.setPreferredSize(new Dimension(0, 700));
         grade.setBackground(Tema.BG);
         grade.add(criarForm());
         grade.add(criarTabela2());
@@ -76,47 +96,84 @@ public class CadastroAnimalScreen extends JPanel {
 
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acoes.setBackground(Tema.BG);
-        JButton bS = Tema.criarBotaoPrimario("✔ SALVAR");
+
+        JButton bS = Tema.criarBotaoPrimario("SALVAR");
+        bS.setIcon(ico("save", 14));
+
         JButton bD = Tema.criarBotaoSecundario("DETALHES");
+        bD.setIcon(ico("search", 14));
+
         JButton bE = Tema.criarBotaoCyan("EDITAR");
+        bE.setIcon(ico("edit", 14));
+
         JButton bR = Tema.criarBotaoPerigo("REMOVER");
+        bR.setIcon(ico("trash-2", 14));
+
         JButton bC = Tema.criarBotaoSecundario("CANCELAR");
+        bC.setIcon(ico("x", 14));
+
+        JButton bO = Tema.criarBotaoPrimario("EXPORTAR OBSIDIAN");
+        bO.setIcon(ico("download", 14));
+
         bS.addActionListener(e -> salvar());
         bD.addActionListener(e -> detalhes());
         bE.addActionListener(e -> editar());
         bR.addActionListener(e -> remover());
         bC.addActionListener(e -> limpar());
-        acoes.add(bS); acoes.add(bD); acoes.add(bE); acoes.add(bR); acoes.add(bC);
+        bO.addActionListener(e -> exportarParaObsidian());
+
+        acoes.add(bS); acoes.add(bD); acoes.add(bE); acoes.add(bR); acoes.add(bC); acoes.add(bO);
         p.add(acoes, BorderLayout.SOUTH);
         return p;
     }
 
     private JPanel criarForm() {
         JPanel card = Tema.criarCard();
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.add(Tema.criarLabel("◈ DADOS DO ANIMAL", Tema.F_LABEL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(10));
+        card.setLayout(new BorderLayout());
 
-        campoNome  = Tema.criarCampo("");
-        campoBrinco= Tema.criarCampo("");
-        card.add(Tema.par("NOME", campoNome, "Nº BRINCO", campoBrinco));
-        card.add(Box.createVerticalStrut(6));
+        // Painel interno com GridBagLayout para controle total do alinhamento
+        JPanel inner = new JPanel(new GridBagLayout());
+        inner.setBackground(Tema.CARD);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill    = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.gridx   = 0;
+        gbc.gridy   = 0;
+        gbc.insets  = new Insets(0, 0, 0, 0);
 
+        // -- Cabecalho ------------------------------------------------------
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.CARD);
+        secHeader.add(new JLabel(ico("tag", 14)));
+        secHeader.add(Tema.criarLabel("DADOS DO ANIMAL", Tema.F_LABEL, Tema.TEXT3));
+        inner.add(secHeader, gbc);
+
+        // -- NOME / No BRINCO -----------------------------------------------
+        gbc.gridy++;
+        gbc.insets = new Insets(10, 0, 0, 0);
+        campoNome   = Tema.criarCampo("");
+        campoBrinco = Tema.criarCampo("");
+        inner.add(Tema.par("NOME", campoNome, "Nº BRINCO", campoBrinco), gbc);
+
+        // -- RACA / SEXO ----------------------------------------------------
+        gbc.gridy++;
+        gbc.insets = new Insets(6, 0, 0, 0);
         comboRaca = Tema.criarCombo("Nelore","Angus","Gir","Brahman","Senepol","Tabapuã","Simmental","Hereford");
         comboSexo = Tema.criarCombo("Femea","Macho");
-        card.add(Tema.par("RAÇA", comboRaca, "SEXO", comboSexo));
-        card.add(Box.createVerticalStrut(6));
+        inner.add(Tema.par("RAÇA", comboRaca, "SEXO", comboSexo), gbc);
 
+        // -- PESO / DATA NASC. ----------------------------------------------
+        gbc.gridy++;
         campoPeso     = Tema.criarCampo("");
         campoDataNasc = Tema.criarCampo("dd/mm/aaaa");
-        card.add(Tema.par("PESO (KG)", campoPeso, "DATA NASC.", campoDataNasc));
-        card.add(Box.createVerticalStrut(6));
+        inner.add(Tema.par("PESO (KG)", campoPeso, "DATA NASC.", campoDataNasc), gbc);
 
+        // -- FAZENDA / LOTE -------------------------------------------------
+        gbc.gridy++;
         List<Fazenda> fazendas = backend.fazendaService.listarTodas();
         String[] nomFaz = fazendas.stream().map(Fazenda::getNome).toArray(String[]::new);
         comboFazenda = nomFaz.length > 0 ? Tema.criarCombo(nomFaz) : Tema.criarCombo("Nenhuma fazenda");
 
-        // Se há fazenda ativa, pré-selecionar
         Fazenda fa = backend.getFazendaAtiva();
         if (fa != null) {
             for (int i = 0; i < fazendas.size(); i++) {
@@ -126,11 +183,11 @@ public class CadastroAnimalScreen extends JPanel {
                 }
             }
         }
-
         comboLote = Tema.criarCombo("Lote A","Lote B","Lote C");
-        card.add(Tema.par("FAZENDA", comboFazenda, "LOTE", comboLote));
-        card.add(Box.createVerticalStrut(6));
+        inner.add(Tema.par("FAZENDA", comboFazenda, "LOTE", comboLote), gbc);
 
+        // -- STATUS / COLAR GPS ---------------------------------------------
+        gbc.gridy++;
         comboStatus = Tema.criarCombo("Ativo","Vendido","Abatido");
         List<Colar> disp = backend.colarService.listarDisponiveis();
         String[] opts = new String[disp.size() + 1];
@@ -138,14 +195,27 @@ public class CadastroAnimalScreen extends JPanel {
         for (int i = 0; i < disp.size(); i++)
             opts[i+1] = disp.get(i).getId() + " | " + disp.get(i).getBateria() + "%";
         comboColar = Tema.criarCombo(opts);
-        card.add(Tema.par("STATUS", comboStatus, "COLAR GPS", comboColar));
-        card.add(Box.createVerticalStrut(6));
+        inner.add(Tema.par("STATUS", comboStatus, "COLAR GPS", comboColar), gbc);
 
+        // -- OBSERVACOES ----------------------------------------------------
+        gbc.gridy++;
+        gbc.insets = new Insets(6, 0, 2, 0);
+        inner.add(Tema.criarLabel("OBSERVAÇÕES", Tema.F_SMALL, Tema.TEXT3), gbc);
+
+        gbc.gridy++;
+        gbc.insets = new Insets(0, 0, 0, 0);
         campoObs = Tema.criarCampo("");
-        campoObs.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
-        card.add(Tema.criarLabel("OBSERVAÇÕES", Tema.F_SMALL, Tema.TEXT3));
-        card.add(Box.createVerticalStrut(4));
-        card.add(campoObs);
+        inner.add(campoObs, gbc);
+
+        // Empurra tudo para o topo com glue no final
+        gbc.gridy++;
+        gbc.weighty = 1.0;
+        gbc.fill    = GridBagConstraints.VERTICAL;
+        inner.add(Box.createVerticalGlue(), gbc);
+
+        card.add(inner, BorderLayout.CENTER);
+        card.setPreferredSize(new Dimension(0, 650));
+        card.setMinimumSize(new Dimension(0, 600));
         return card;
     }
 
@@ -155,7 +225,12 @@ public class CadastroAnimalScreen extends JPanel {
 
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Tema.CARD);
-        topo.add(Tema.criarLabel("◈ ANIMAIS CADASTRADOS", Tema.F_LABEL, Tema.TEXT3), BorderLayout.WEST);
+
+        JPanel topoLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        topoLeft.setBackground(Tema.CARD);
+        topoLeft.add(new JLabel(ico("list", 14)));
+        topoLeft.add(Tema.criarLabel("ANIMAIS CADASTRADOS", Tema.F_LABEL, Tema.TEXT3));
+        topo.add(topoLeft, BorderLayout.WEST);
         topo.add(Tema.criarLabel("2× → detalhes", Tema.F_SMALL, Tema.TEXT3), BorderLayout.EAST);
         card.add(topo, BorderLayout.NORTH);
 
@@ -183,9 +258,8 @@ public class CadastroAnimalScreen extends JPanel {
                 : backend.animalService.listarTodos();
         for (Animal a : lista)
             tabelaModel.addRow(new Object[]{
-                    a.getNome(), a.getNumeroBrinco(), a.getRaca(),
-                    a.getLote(), a.getColar() != null ? a.getColar().getId() : "—",
-                    a.getStatus()});
+                    a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getLote(),
+                    a.getColar() != null ? a.getColar().getId() : "—", a.getStatus()});
     }
 
     private JPanel criarAbaPeso() {
@@ -193,57 +267,24 @@ public class CadastroAnimalScreen extends JPanel {
         p.setBackground(Tema.BG);
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
-        Fazenda fa = backend.getFazendaAtiva();
-        List<Animal> animais = fa != null
-                ? backend.animalService.listarPorFazenda(fa.getId())
-                : backend.animalService.listarTodos();
+        JPanel secHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        secHeader.setBackground(Tema.BG);
+        secHeader.add(new JLabel(ico("trending-up", 14)));
+        secHeader.add(Tema.criarLabel("HISTÓRICO DE PESO", Tema.F_LABEL, Tema.TEXT3));
+        p.add(secHeader, BorderLayout.NORTH);
 
-        String[] nomes = animais.stream()
-                .map(a -> a.getNome() + " #" + a.getNumeroBrinco())
-                .toArray(String[]::new);
-        JComboBox<String> combo = nomes.length > 0 ? Tema.criarCombo(nomes) : Tema.criarCombo("Nenhum");
-        JTextField campoPesoN = Tema.criarCampo("Peso em kg");
-        campoPesoN.setPreferredSize(new Dimension(120, 34));
-
-        JButton btnReg = Tema.criarBotaoPrimario("REGISTRAR PESAGEM");
-        btnReg.addActionListener(e -> {
-            int idx = combo.getSelectedIndex();
-            if (idx < 0 || idx >= animais.size()) return;
-            try {
-                double peso = Double.parseDouble(campoPesoN.getText().trim());
-                Animal a = animais.get(idx);
-                a.setPeso(peso);
-                backend.animalService.atualizar(a);
-                LogAtividades.registrar(backend.authService.getUsuarioLogado(),
-                        "Pesagem: " + a.getNome() + "=" + peso + "kg");
-                JOptionPane.showMessageDialog(this, "Peso atualizado para " + peso + " kg!", "OK",
-                        JOptionPane.INFORMATION_MESSAGE);
-                campoPesoN.setText("");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Peso inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        JPanel topo = new JPanel(new BorderLayout(0, 8));
-        topo.setBackground(Tema.BG);
-        topo.add(Tema.criarLabel("Selecione animal e informe o novo peso:", Tema.F_BODY, Tema.TEXT2), BorderLayout.NORTH);
-        topo.add(combo, BorderLayout.CENTER);
-        JPanel formP = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        formP.setBackground(Tema.BG);
-        formP.add(Tema.criarLabel("NOVO PESO:", Tema.F_SMALL, Tema.TEXT3));
-        formP.add(campoPesoN);
-        formP.add(btnReg);
-        topo.add(formP, BorderLayout.SOUTH);
-        p.add(topo, BorderLayout.NORTH);
-
-        String[] cols = {"ANIMAL","BRINCO","RAÇA","LOTE","PESO ATUAL","STATUS"};
-        DefaultTableModel m = new DefaultTableModel(cols, 0) {
+        String[] cols = {"ANIMAL", "DATA", "PESO (KG)", "VARIAÇÃO"};
+        DefaultTableModel mp = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (Animal a : animais)
-            m.addRow(new Object[]{a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getLote(),
-                    a.getPeso() > 0 ? a.getPeso() + " kg" : "—", a.getStatus()});
-        p.add(Tema.criarScroll(Tema.criarTabela(m)), BorderLayout.CENTER);
+        p.add(Tema.criarScroll(Tema.criarTabela(mp)), BorderLayout.CENTER);
+
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        acoes.setBackground(Tema.BG);
+        JButton btnAdd = Tema.criarBotaoPrimario("REGISTRAR PESO");
+        btnAdd.setIcon(ico("plus", 14));
+        acoes.add(btnAdd);
+        p.add(acoes, BorderLayout.SOUTH);
         return p;
     }
 
@@ -252,8 +293,8 @@ public class CadastroAnimalScreen extends JPanel {
         p.setBackground(Tema.BG);
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
-        JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        filtros.setBackground(Tema.CARD);
+        JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        filtros.setBackground(Tema.BG);
         filtros.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Tema.BORDER, 1),
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)));
@@ -303,7 +344,8 @@ public class CadastroAnimalScreen extends JPanel {
         fRaca.addActionListener(e -> carregar.run());
         busca.addActionListener(e -> carregar.run());
 
-        JButton csv = Tema.criarBotaoSecundario("↓ EXPORTAR CSV");
+        JButton csv = Tema.criarBotaoSecundario("EXPORTAR CSV");
+        csv.setIcon(ico("download", 14));
         csv.addActionListener(e -> exportarCSV(todos));
         JPanel s = new JPanel(new FlowLayout(FlowLayout.LEFT));
         s.setBackground(Tema.BG);
@@ -336,7 +378,6 @@ public class CadastroAnimalScreen extends JPanel {
         a.setObservacoes(campoObs.getText().trim());
         try { a.setPeso(Double.parseDouble(campoPeso.getText().trim())); } catch (Exception ignored) {}
 
-        // Vincular fazenda
         List<Fazenda> fazendas = backend.fazendaService.listarTodas();
         int fIdx = comboFazenda.getSelectedIndex();
         if (fIdx >= 0 && fIdx < fazendas.size()) {
@@ -345,7 +386,6 @@ public class CadastroAnimalScreen extends JPanel {
             a.setFazendaNome(f.getNome());
         }
 
-        // Data nascimento
         String dataStr = campoDataNasc.getText().trim();
         if (!dataStr.isEmpty() && !dataStr.equals("dd/mm/aaaa")) {
             try {
@@ -432,4 +472,37 @@ public class CadastroAnimalScreen extends JPanel {
             JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void exportarParaObsidian() {
+
+    int row = tabela.getSelectedRow();
+
+    if (row < 0) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Selecione um animal!",
+                "Aviso",
+                JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    String brinco = tabelaModel.getValueAt(row, 1).toString();
+
+    backend.animalService.buscarPorBrinco(brinco).ifPresent(a -> {
+
+        ObsidianExportService.exportarAnimal(
+                a.getId(),
+                a.getNome(),
+                a.getStatus()
+        );
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Exportado para Obsidian!",
+                "OK",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    });
+  }
 }
