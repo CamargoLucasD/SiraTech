@@ -71,7 +71,7 @@ public class DashboardScreen extends JPanel {
         scAnimais = new StatCard("ANIMAIS ATIVOS",  String.valueOf(totalAnimaisFazenda()),  Tema.GREENL, "cadastrados");
         scArea    = new StatCard("FAZENDAS/ÁREAS",  fazendaAreaLabel(),                     Tema.GREEN3, "fazendas/lotes");
         scAlertas = new StatCard("ALERTAS",         String.valueOf(totalAlertasFazenda()),  Tema.RED,    "pendentes");
-        scColares = new StatCard("COLARES ATIVOS",  String.valueOf(totalColaresAtivosFA()), Tema.CYAN,   "GPS conectados");
+        scColares = new StatCard("BRINCOES ATIVOS",  String.valueOf(totalColaresAtivosFA()), Tema.CYAN,   "Brincos Conectados");
 
         scAnimais.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         scAnimais.addMouseListener(new MouseAdapter() { public void mouseClicked(MouseEvent e) { mainFrame.navegarPara(1); } });
@@ -98,7 +98,7 @@ public class DashboardScreen extends JPanel {
         JPanel cardMapa = Tema.criarCard();
         cardMapa.setLayout(new BorderLayout(0, 6));
 
-        JLabel lblMapa = Tema.criarLabel("MAPA EM TEMPO REAL", Tema.F_LABEL, Tema.TEXT3);
+        JLabel lblMapa = Tema.criarLabel("MAPA", Tema.F_LABEL, Tema.TEXT3);
         lblMapa.setIcon(ico("zap", 14));
         lblMapa.setIconTextGap(6);
         cardMapa.add(lblMapa, BorderLayout.NORTH);

@@ -89,9 +89,9 @@ public class DetalhesAnimalDialog extends JDialog {
             Colar c = animal.getColar();
             JPanel grid = new JPanel(new GridLayout(0, 2, 8, 8));
             grid.setBackground(Tema.BG);
-            addI(grid, "ID DO COLAR",  c.getId());
+            addI(grid, "ID DO BRINCO",  c.getId());
             addI(grid, "BATERIA",      c.getBateria() + "%");
-            addI(grid, "SINAL GPS",    c.getNivelSinal());
+            addI(grid, "SINAL DO BRINCO",    c.getNivelSinal());
             addI(grid, "FREQ. PING",   c.getFrequenciaMinutos() + " min");
             addI(grid, "FIRMWARE",     c.getFirmware());
 
@@ -121,12 +121,12 @@ public class DetalhesAnimalDialog extends JDialog {
             colarP.add(grid, BorderLayout.CENTER);
             colarP.add(batWrap, BorderLayout.SOUTH);
         } else {
-            JLabel semColar = Tema.criarLabel("Sem colar GPS vinculado", Tema.F_BODY, Tema.TEXT3);
+            JLabel semColar = Tema.criarLabel("Sem brinco vinculado", Tema.F_BODY, Tema.TEXT3);
             semColar.setHorizontalAlignment(SwingConstants.CENTER);
             colarP.add(semColar, BorderLayout.CENTER);
         }
 
-        JLabel tabColar = new JLabel("COLAR GPS");
+        JLabel tabColar = new JLabel("BRINCO");
         tabColar.setIcon(ico("zap", 14));
         tabColar.setIconTextGap(5);
         abas.addTab(null, colarP);

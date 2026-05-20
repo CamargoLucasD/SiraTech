@@ -11,7 +11,7 @@ import javax.swing.*;
 public class NavBar extends JPanel {
 
     private static final String[] ABAS = {
-        "DASHBOARD","ANIMAIS","COLEIRAS","FAZENDAS",
+        "DASHBOARD","ANIMAIS","BRINCOS","FAZENDAS",
         "ALERTAS","RELATÓRIOS","SAÚDE","FINANCEIRO","CONFIG"
     };
 
@@ -106,7 +106,7 @@ public class NavBar extends JPanel {
                 BorderFactory.createLineBorder(Tema.BORDER, 1),
                 BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         campoBusca.setText("Buscar...");
-        campoBusca.setToolTipText("Busca global: animais, coleiras, fazendas");
+        campoBusca.setToolTipText("Busca global: animais, brincos, fazendas");
         campoBusca.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 if ("Buscar...".equals(campoBusca.getText())) campoBusca.setText("");
@@ -276,7 +276,7 @@ public class NavBar extends JPanel {
             sb.append(String.format("  %-12s %-8s %-10s %s\n",
                     a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getStatus()));
 
-        sb.append("\n--- COLEIRAS ---\n");
+        sb.append("\n--- BRINCOS ---\n");
         boolean achouColar = false;
         for (Colar c : backend.colarService.listarTodos()) {
             if (c.getId().toLowerCase().contains(t)) {

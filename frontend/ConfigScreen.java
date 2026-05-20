@@ -266,7 +266,7 @@ public class ConfigScreen extends JPanel {
         JCheckBox chkFora    = criarCheck("Alerta quando animal sair do geofence", true);
         JCheckBox chkBateria = criarCheck("Alerta de bateria baixa (<20%)", true);
         JCheckBox chkVacina  = criarCheck("Lembrete de vacinação (30 dias antes)", true);
-        JCheckBox chkSinal   = criarCheck("Alerta de coleira sem sinal", true);
+        JCheckBox chkSinal   = criarCheck("Alerta de brinco sem sinal", true);
 
         card.add(chkFora);    card.add(Box.createVerticalStrut(8));
         card.add(chkBateria); card.add(Box.createVerticalStrut(8));
@@ -377,7 +377,7 @@ public class ConfigScreen extends JPanel {
         addI2(info, "ARQUIVO",        "siratech.db");
         addI2(info, "ANIMAIS",        String.valueOf(backend.animalService.totalAnimais()));
         addI2(info, "ALERTAS",        String.valueOf(backend.alertaService.listarTodos().size()));
-        addI2(info, "COLARES",        String.valueOf(backend.colarService.listarTodos().size()));
+        addI2(info, "BRINCOS",        String.valueOf(backend.colarService.listarTodos().size()));
         addI2(info, "FAZENDAS",       String.valueOf(backend.fazendaService.listarTodas().size()));
         card.add(info); card.add(Box.createVerticalStrut(14));
 
