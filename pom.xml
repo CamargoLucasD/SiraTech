@@ -70,7 +70,6 @@
 
         <plugins>
 
-            <!-- Adiciona as pastas backend e frontend como source roots -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -84,8 +83,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>backend</source>
-                                <source>frontend</source>
+                                <source>.</source>
                             </sources>
                         </configuration>
                     </execution>

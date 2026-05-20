@@ -15,6 +15,7 @@ public class MonitoramentoScreen extends JPanel {
     private final Backend   backend;
     private final MainFrame mainFrame;
     private DefaultTableModel modelAtivos;
+    private DefaultTableModel modelHistorico;
     private JTable            tabelaAtivos;
 
     // ── Ícone SVG helper ──────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ public class MonitoramentoScreen extends JPanel {
 
     public void atualizarDados() {
         carregarAlertasAtivos();
+        carregarHistorico();
     }
 
     private JPanel criarConteudo() {
@@ -218,6 +220,7 @@ public class MonitoramentoScreen extends JPanel {
                 backend.alertaService.resolverAlerta(ativos.get(row).getId());
                 LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Resolveu alerta selecionado");
                 carregarAlertasAtivos();
+                carregarHistorico();
             }
         });
         acoes.add(btnR);
@@ -322,24 +325,30 @@ public class MonitoramentoScreen extends JPanel {
         card.add(topo, BorderLayout.NORTH);
 
         String[] cols = {"TIPO", "ANIMAL", "MENSAGEM", "DATA/HORA", "RESOLVIDO"};
-        DefaultTableModel m = new DefaultTableModel(cols, 0) {
+        modelHistorico = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (Alerta a : historicosDaFazenda())
-            m.addRow(new Object[]{
-                    a.getTipo().toString(),
-                    a.getAnimal() != null ? a.getAnimal().getNome() : "—",
-                    a.getMensagem(),
-                    a.getDataHoraFormatada(),
-                    a.isResolvido() ? "✔" : "✘"});
+        carregarHistorico();
 
-        JTable tabHist = Tema.criarTabela(m);
+        JTable tabHist = Tema.criarTabela(modelHistorico);
         tabHist.getColumnModel().getColumn(0).setCellRenderer(tipoRenderer());
         tabHist.getColumnModel().getColumn(4).setCellRenderer(resolvidoRenderer());
         card.add(Tema.criarScroll(tabHist), BorderLayout.CENTER);
 
         p.add(card, BorderLayout.CENTER);
         return p;
+    }
+
+    private void carregarHistorico() {
+        if (modelHistorico == null) return;
+        modelHistorico.setRowCount(0);
+        for (Alerta a : historicosDaFazenda())
+            modelHistorico.addRow(new Object[]{
+                    a.getTipo().toString(),
+                    a.getAnimal() != null ? a.getAnimal().getNome() : "—",
+                    a.getMensagem(),
+                    a.getDataHoraFormatada(),
+                    a.isResolvido() ? "✔" : "✘"});
     }
 
     // ── Renderers ─────────────────────────────────────────────────────────────
@@ -378,9 +387,9 @@ public class MonitoramentoScreen extends JPanel {
 
     // ── Ações ─────────────────────────────────────────────────────────────────
     private void resolverTodos() {
-        for (Alerta a : alertasDaFazenda())
-            backend.alertaService.resolverAlerta(a.getId());
+        backend.alertaService.resolverTodos();
         carregarAlertasAtivos();
+        carregarHistorico();
         LogAtividades.registrar(backend.authService.getUsuarioLogado(),
                 "Resolveu todos os alertas da fazenda ativa");
         JOptionPane.showMessageDialog(this, "Todos os alertas foram resolvidos!",
