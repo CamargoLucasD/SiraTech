@@ -36,7 +36,7 @@ public class ColeiraScreen extends JPanel {
         JTabbedPane abas = Tema.criarAbas();
 
         // Abas com ícones
-        JLabel tabColeiras  = new JLabel("COLEIRAS");
+        JLabel tabColeiras  = new JLabel("BRINCOS");
         tabColeiras.setIcon(ico("zap", 14));
         tabColeiras.setIconTextGap(5);
 
@@ -58,7 +58,7 @@ public class ColeiraScreen extends JPanel {
         h.setBackground(Tema.BG);
         h.setBorder(BorderFactory.createEmptyBorder(12, 16, 8, 16));
 
-        JLabel lblTitulo = Tema.criarLabel("GESTÃO DE COLEIRAS GPS", Tema.F_TITLE, Tema.GREENL);
+        JLabel lblTitulo = Tema.criarLabel("GESTÃO DE BRINCOS", Tema.F_TITLE, Tema.GREENL);
         lblTitulo.setIcon(ico("zap", 20));
         lblTitulo.setIconTextGap(8);
         h.add(lblTitulo, BorderLayout.WEST);
@@ -74,7 +74,7 @@ public class ColeiraScreen extends JPanel {
 
         // Botões de admin com ícones — lógica original preservada
         if (backend.authService.isAdmin()) {
-            JButton btnAdd = Tema.criarBotaoPrimario("NOVA COLEIRA");
+            JButton btnAdd = Tema.criarBotaoPrimario("NOVO BRINCO");
             btnAdd.setIcon(ico("plus-circle", 16));
             btnAdd.setIconTextGap(6);
 
@@ -115,7 +115,7 @@ public class ColeiraScreen extends JPanel {
 
         JPanel stats = new JPanel(new GridLayout(1, 3, 10, 0));
         stats.setBackground(Tema.BG);
-        stats.add(new StatCard("TOTAL",      String.valueOf(todos.size()), Tema.GREENL, "coleiras"));
+        stats.add(new StatCard("TOTAL",      String.valueOf(todos.size()), Tema.GREENL, "brincos"));
         stats.add(new StatCard("EM USO",     String.valueOf(ativos),       Tema.CYAN,   "vinculadas"));
         stats.add(new StatCard("BAT. BAIXA", String.valueOf(batBaixa),     Tema.AMBER,  "<20%"));
         p.add(stats, BorderLayout.NORTH);
@@ -127,7 +127,7 @@ public class ColeiraScreen extends JPanel {
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(Tema.CARD);
 
-        JLabel lblCard = Tema.criarLabel("TODAS AS COLEIRAS", Tema.F_LABEL, Tema.TEXT3);
+        JLabel lblCard = Tema.criarLabel("TODOS OS BRINCOS", Tema.F_LABEL, Tema.TEXT3);
         lblCard.setIcon(ico("database", 14));
         lblCard.setIconTextGap(6);
         topo.add(lblCard, BorderLayout.WEST);
@@ -187,7 +187,7 @@ public class ColeiraScreen extends JPanel {
         p.setBackground(Tema.BG);
         p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
-        JLabel lblTit = Tema.criarLabel("COLEIRAS COM BATERIA BAIXA (< 20%)", Tema.F_LABEL, Tema.RED);
+        JLabel lblTit = Tema.criarLabel("BRINCOS COM BATERIA BAIXA (< 20%)", Tema.F_LABEL, Tema.RED);
         lblTit.setIcon(ico("alert-triangle", 14));
         lblTit.setIconTextGap(6);
         p.add(lblTit, BorderLayout.NORTH);
@@ -213,7 +213,7 @@ public class ColeiraScreen extends JPanel {
         warn.setBackground(Tema.CARD);
         warn.setBorder(BorderFactory.createLineBorder(Tema.AMBER, 1));
         JLabel lblWarn = Tema.criarLabel(
-                "Coleiras abaixo de 20% devem ser recarregadas em até 48h.", Tema.F_BODY, Tema.AMBER);
+                "Brincos abaixo de 20% devem ser recarregadas em até 48h.", Tema.F_BODY, Tema.AMBER);
         lblWarn.setIcon(ico("alert-triangle", 14));
         lblWarn.setIconTextGap(6);
         warn.add(lblWarn);
@@ -247,7 +247,7 @@ public class ColeiraScreen extends JPanel {
     private void detalhes() {
         int row = tabela.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um brinco!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         backend.colarService.buscarPorId(tabelaModel.getValueAt(row, 0).toString())
@@ -258,7 +258,7 @@ public class ColeiraScreen extends JPanel {
     private void adicionarComSenha() {
         JPasswordField pf = Tema.criarSenha();
         if (JOptionPane.showConfirmDialog(this, pf,
-                "Confirme sua senha para adicionar coleira",
+                "Confirme sua senha para adicionar o brinco",
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
         if (!backend.authService.verificarSenha(new String(pf.getPassword()))) {
             JOptionPane.showMessageDialog(this, "Senha incorreta!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -276,12 +276,12 @@ public class ColeiraScreen extends JPanel {
         form.add(Tema.criarLabel("SINAL:",           Tema.F_SMALL, Tema.TEXT3)); form.add(cSinal);
         form.add(Tema.criarLabel("FREQUÊNCIA (min):", Tema.F_SMALL, Tema.TEXT3)); form.add(cFreq);
 
-        if (JOptionPane.showConfirmDialog(this, form, "Nova Coleira GPS",
+        if (JOptionPane.showConfirmDialog(this, form, "Novo Brinco",
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
 
         String idNovo = cId.getText().trim();
         if (idNovo.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "O ID da coleira é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "O ID do brinco é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
         int bateria, freq;
@@ -299,10 +299,10 @@ public class ColeiraScreen extends JPanel {
         try {
             Colar nova = new Colar(idNovo, bateria, cSinal.getSelectedItem().toString(), freq);
             backend.colarService.salvar(nova);
-            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Cadastrou coleira: " + nova.getId());
+            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Cadastrou brinco: " + nova.getId());
             carregarTabela();
             JOptionPane.showMessageDialog(this,
-                "Coleira " + nova.getId() + " cadastrada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                "Brinco " + nova.getId() + " cadastrado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "ID Duplicado", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
@@ -313,7 +313,7 @@ public class ColeiraScreen extends JPanel {
     private void editarComSenha() {
         int row = tabela.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um brinco!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         String cid = tabelaModel.getValueAt(row, 0).toString();
@@ -337,7 +337,7 @@ public class ColeiraScreen extends JPanel {
             form.add(Tema.criarLabel("SINAL:",            Tema.F_SMALL, Tema.TEXT3)); form.add(cSinal);
             form.add(Tema.criarLabel("FREQUÊNCIA (min):", Tema.F_SMALL, Tema.TEXT3)); form.add(cFreq);
 
-            if (JOptionPane.showConfirmDialog(this, form, "Editar Coleira " + cid,
+            if (JOptionPane.showConfirmDialog(this, form, "Editar Brinco " + cid,
                     JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
             try {
                 int bat  = Integer.parseInt(cBat.getText().trim());
@@ -347,10 +347,10 @@ public class ColeiraScreen extends JPanel {
                 c.setFrequenciaMinutos(freq);
                 c.setNivelSinal(cSinal.getSelectedItem().toString());
                 backend.colarService.atualizar(c);
-                LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Editou coleira: " + cid);
+                LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Editou brinco: " + cid);
                 carregarTabela();
                 JOptionPane.showMessageDialog(this,
-                    "Coleira " + cid + " atualizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    "Brinco " + cid + " atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
                     "Bateria deve ser 0–100 e frequência deve ser positiva.",
@@ -364,7 +364,7 @@ public class ColeiraScreen extends JPanel {
     private void excluirComSenha() {
         int row = tabela.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um brinco!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         String cid = tabelaModel.getValueAt(row, 0).toString();
@@ -377,15 +377,15 @@ public class ColeiraScreen extends JPanel {
             return;
         }
         int conf = JOptionPane.showConfirmDialog(this,
-                "Excluir permanentemente a coleira " + cid + "?\nEsta ação não pode ser desfeita.",
+                "Excluir permanentemente o brinco " + cid + "?\nEsta ação não pode ser desfeita.",
                 "Confirmar Exclusão", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (conf != JOptionPane.YES_OPTION) return;
         try {
             backend.colarService.excluir(cid, backend.animalService);
-            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Excluiu coleira: " + cid);
+            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Excluiu brinco: " + cid);
             carregarTabela();
             JOptionPane.showMessageDialog(this,
-                "Coleira " + cid + " excluída com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                "Brinco " + cid + " excluído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Não é possível excluir", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
@@ -396,11 +396,11 @@ public class ColeiraScreen extends JPanel {
     private void vincular() {
         int row = tabela.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um brinco!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (!"Disponível".equals(tabelaModel.getValueAt(row, 5).toString())) {
-            JOptionPane.showMessageDialog(this, "Coleira já está em uso!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Brinco já está em uso!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         String cid = tabelaModel.getValueAt(row, 0).toString();
@@ -413,18 +413,18 @@ public class ColeiraScreen extends JPanel {
             return;
         }
         String esc = (String) JOptionPane.showInputDialog(this,
-                "Selecione o animal para vincular à coleira " + cid + ":",
-                "Vincular Coleira", JOptionPane.QUESTION_MESSAGE, null, nomes, nomes[0]);
+                "Selecione o animal para vincular ao brinco " + cid + ":",
+                "Vincular Brinco", JOptionPane.QUESTION_MESSAGE, null, nomes, nomes[0]);
         if (esc != null) {
             int idx = Arrays.asList(nomes).indexOf(esc);
             Animal a = animais.get(idx);
             backend.colarService.vincularAoAnimal(cid, a);
             backend.animalService.atualizar(a);
             LogAtividades.registrar(backend.authService.getUsuarioLogado(),
-                    "Vinculou coleira " + cid + " ao animal " + a.getNome());
+                    "Vinculou brinco " + cid + " ao animal " + a.getNome());
             carregarTabela();
             JOptionPane.showMessageDialog(this,
-                "Coleira " + cid + " vinculada a " + a.getNome() + " com sucesso!",
+                "Brinco " + cid + " vinculado a " + a.getNome() + " com sucesso!",
                 "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
     }
@@ -432,23 +432,23 @@ public class ColeiraScreen extends JPanel {
     private void liberar() {
         int row = tabela.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma coleira!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um brinco!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         String cid = tabelaModel.getValueAt(row, 0).toString();
         if ("Disponível".equals(tabelaModel.getValueAt(row, 5).toString())) {
-            JOptionPane.showMessageDialog(this, "A coleira já está livre!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "O brinco já está livre!", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         int conf = JOptionPane.showConfirmDialog(this,
-                "Deseja liberar a coleira " + cid + " do animal?",
+                "Deseja liberar o brinco " + cid + " do animal?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);
         if (conf != JOptionPane.YES_OPTION) return;
         backend.colarService.liberarColar(cid);
-        LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Liberou coleira: " + cid);
+        LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Liberou brinco: " + cid);
         carregarTabela();
         JOptionPane.showMessageDialog(this,
-            "Coleira " + cid + " liberada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            "Brinco " + cid + " liberado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     // ── Renderers — lógica original preservada ───────────────────────────────

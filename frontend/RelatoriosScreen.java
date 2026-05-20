@@ -107,9 +107,9 @@ public class RelatoriosScreen extends JPanel {
         stats.setBackground(Tema.BG);
         stats.add(new StatCard("ANIMAIS",    String.valueOf(backend.totalAnimais()),                             Tema.GREENL, "total cadastrados"));
         stats.add(new StatCard("ALERTAS",    String.valueOf(backend.totalAlertas()),                             Tema.RED,    "pendentes"));
-        stats.add(new StatCard("COLARES",    String.valueOf(backend.colarService.listarTodos().size()),          Tema.CYAN,   "total"));
+        stats.add(new StatCard("BRINCOS",    String.valueOf(backend.colarService.listarTodos().size()),          Tema.CYAN,   "total"));
         stats.add(new StatCard("FAZENDAS",   String.valueOf(backend.fazendaService.listarTodas().size()),        Tema.PURPLE, "cadastradas"));
-        stats.add(new StatCard("EM USO",     String.valueOf(backend.totalColaresAtivos()),                       Tema.CYAN,   "colares ativos"));
+        stats.add(new StatCard("EM USO",     String.valueOf(backend.totalColaresAtivos()),                       Tema.CYAN,   "brincos ativos"));
         stats.add(new StatCard("BAT. BAIXA", String.valueOf(backend.colarService.colaresBateriaBaixa(20).size()),Tema.AMBER,  "< 20%"));
         p.add(stats, BorderLayout.NORTH);
 
@@ -202,7 +202,7 @@ public class RelatoriosScreen extends JPanel {
 
         p.add(filtros, BorderLayout.NORTH);
 
-        String[] cols = {"NOME", "BRINCO", "RAÇA", "LOTE", "PESO", "COLAR", "STATUS", "ALERTAS"};
+        String[] cols = {"NOME", "BRINCO", "RAÇA", "LOTE", "PESO", "BRINCO", "STATUS", "ALERTAS"};
         DefaultTableModel m = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -269,7 +269,7 @@ public class RelatoriosScreen extends JPanel {
             try {
                 String n = "relatorio_animais_" + System.currentTimeMillis() + ".csv";
                 FileWriter fw = new FileWriter(n);
-                fw.write("Nome,Brinco,Raca,Lote,Peso,Colar,Status\n");
+                fw.write("Nome,Brinco,Raca,Lote,Peso,Brinco,Status\n");
                 for (Animal a : todos)
                     fw.write(a.getNome() + "," + a.getNumeroBrinco() + "," + a.getRaca() + ","
                             + (a.getLote() != null ? a.getLote() : "") + "," + a.getPeso() + ","

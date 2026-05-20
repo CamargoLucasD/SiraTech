@@ -191,11 +191,11 @@ public class CadastroAnimalScreen extends JPanel {
         comboStatus = Tema.criarCombo("Ativo","Vendido","Abatido");
         List<Colar> disp = backend.colarService.listarDisponiveis();
         String[] opts = new String[disp.size() + 1];
-        opts[0] = "Sem colar";
+        opts[0] = "Sem brinco";
         for (int i = 0; i < disp.size(); i++)
             opts[i+1] = disp.get(i).getId() + " | " + disp.get(i).getBateria() + "%";
         comboColar = Tema.criarCombo(opts);
-        inner.add(Tema.par("STATUS", comboStatus, "COLAR GPS", comboColar), gbc);
+        inner.add(Tema.par("STATUS", comboStatus, "BRINCO", comboColar), gbc);
 
         // -- OBSERVACOES ----------------------------------------------------
         gbc.gridy++;
@@ -234,7 +234,7 @@ public class CadastroAnimalScreen extends JPanel {
         topo.add(Tema.criarLabel("2× → detalhes", Tema.F_SMALL, Tema.TEXT3), BorderLayout.EAST);
         card.add(topo, BorderLayout.NORTH);
 
-        String[] cols = {"NOME","BRINCO","RAÇA","LOTE","COLAR","STATUS"};
+        String[] cols = {"NOME","BRINCO","RAÇA","LOTE","BRINCO","STATUS"};
         tabelaModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };

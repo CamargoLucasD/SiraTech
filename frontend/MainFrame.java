@@ -24,7 +24,7 @@ public class MainFrame extends JFrame {
     public static final int TELA_CONFIG      = 8;
 
     private static final String[] NOMES = {
-        "DASHBOARD", "ANIMAIS", "COLEIRAS", "FAZENDAS",
+        "DASHBOARD", "ANIMAIS", "BRINCOS", "FAZENDAS",
         "ALERTAS", "RELATORIOS", "SAUDE", "FINANCEIRO", "CONFIG"
     };
 
@@ -66,7 +66,7 @@ public class MainFrame extends JFrame {
         animaisScreen = new CadastroAnimalScreen(this, backend);
         painelPrincipal.add(animaisScreen, "ANIMAIS");
 
-        painelPrincipal.add(new ColeiraScreen(this, backend),         "COLEIRAS");
+        painelPrincipal.add(new ColeiraScreen(this, backend),         "BRINCOS");
         painelPrincipal.add(new CadastroFazendaScreen(this, backend), "FAZENDAS");
 
         monitoramentoScreen = new MonitoramentoScreen(this, backend);

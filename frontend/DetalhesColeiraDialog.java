@@ -19,7 +19,7 @@ public class DetalhesColeiraDialog extends JDialog {
      * @param screen  referência à ColeiraScreen para refresh após ações (pode ser null)
      */
     public DetalhesColeiraDialog(Window owner, Colar c, Backend backend, ColeiraScreen screen) {
-        super(owner, "Coleira: " + c.getId(), ModalityType.APPLICATION_MODAL);
+        super(owner, "Brinco: " + c.getId(), ModalityType.APPLICATION_MODAL);
         setSize(560, 520);
         setLocationRelativeTo(owner);
         setResizable(false);
@@ -34,7 +34,7 @@ public class DetalhesColeiraDialog extends JDialog {
                 BorderFactory.createEmptyBorder(12, 16, 12, 16)));
 
         // Título com ícone de coleira (zap = sinal GPS/ativo)
-        JLabel lblTitulo = Tema.criarLabel("Coleira " + c.getId(),
+        JLabel lblTitulo = Tema.criarLabel("Brinco " + c.getId(),
                 new Font("Segoe UI", Font.BOLD, 20), Tema.CYAN);
         lblTitulo.setIcon(ico("zap", 22));
         lblTitulo.setIconTextGap(10);
@@ -175,7 +175,7 @@ public class DetalhesColeiraDialog extends JDialog {
         form.add(Tema.criarLabel("SINAL:",            Tema.F_SMALL, Tema.TEXT3)); form.add(cSinal);
         form.add(Tema.criarLabel("FREQUÊNCIA (min):", Tema.F_SMALL, Tema.TEXT3)); form.add(cFreq);
 
-        if (JOptionPane.showConfirmDialog(this, form, "Editar Coleira " + c.getId(),
+        if (JOptionPane.showConfirmDialog(this, form, "Editar Brincos " + c.getId(),
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return false;
 
         try {
@@ -187,9 +187,9 @@ public class DetalhesColeiraDialog extends JDialog {
             c.setNivelSinal(cSinal.getSelectedItem().toString());
             backend.colarService.atualizar(c);
             LogAtividades.registrar(backend.authService.getUsuarioLogado(),
-                    "Editou coleira via detalhes: " + c.getId());
+                    "Editou brincos via detalhes: " + c.getId());
             JOptionPane.showMessageDialog(this,
-                "Coleira " + c.getId() + " atualizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                "Brinco " + c.getId() + " atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             return true;
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this,
@@ -216,16 +216,16 @@ public class DetalhesColeiraDialog extends JDialog {
         }
 
         int conf = JOptionPane.showConfirmDialog(this,
-                "Excluir permanentemente a coleira " + c.getId() + "?\nEsta ação não pode ser desfeita.",
+                "Excluir permanentemente o brinco " + c.getId() + "?\nEsta ação não pode ser desfeita.",
                 "Confirmar Exclusão", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (conf != JOptionPane.YES_OPTION) return false;
 
         try {
             backend.colarService.excluir(c.getId(), backend.animalService);
             LogAtividades.registrar(backend.authService.getUsuarioLogado(),
-                    "Excluiu coleira via detalhes: " + c.getId());
+                    "Excluiu brinco via detalhes: " + c.getId());
             JOptionPane.showMessageDialog(this,
-                "Coleira " + c.getId() + " excluída com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                "Brinco " + c.getId() + " excluído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             return true;
         } catch (IllegalStateException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
