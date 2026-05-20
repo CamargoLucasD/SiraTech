@@ -13,6 +13,11 @@ public class HibernateUtil {
                 Configuration config = new Configuration();
                 config.configure("hibernate.cfg.xml");
 
+                // Resolve o caminho do banco via propriedade do sistema
+                // Passado pelo .bat como: java -DDB_PATH="C:/caminho/siratech.db"
+                String dbPath = System.getProperty("DB_PATH", "siratech.db");
+                config.setProperty("hibernate.connection.url", "jdbc:sqlite:" + dbPath);
+
                 // Entidades existentes
                 config.addAnnotatedClass(Animal.class);
                 config.addAnnotatedClass(Colar.class);

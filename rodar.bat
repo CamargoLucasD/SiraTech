@@ -1,12 +1,4 @@
 @echo off
-
-REM Copia o hibernate.cfg.xml para a pasta out
-xcopy /y resources\hibernate.cfg.xml out\
-
-REM Compila
-javac -cp ".;lib/*" -d out backend\*.java frontend\*.java
-
-REM Roda
-java -cp ".;out;lib/*" frontend.frontend
-
+set DB_PATH=%USERPROFILE%\Desktop\Windows\Programas\siratech\siratech.db
+java -Xms64m -Xmx256m -DDB_PATH="%DB_PATH%" -cp "target\classes;target\dependency\*" frontend.frontend
 pause

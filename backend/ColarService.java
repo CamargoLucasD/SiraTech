@@ -10,6 +10,8 @@ public class ColarService {
         carregarDadosIniciais();
     }
 
+    // ─── DADOS INICIAIS ───────────────────────────────────────────────────────
+
     private void carregarDadosIniciais() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             long total = session.createQuery("SELECT COUNT(c) FROM Colar c", Long.class)
@@ -39,6 +41,8 @@ public class ColarService {
         }
     }
 
+    // ─── LEITURA ──────────────────────────────────────────────────────────────
+
     public List<Colar> listarDisponiveis() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
@@ -51,7 +55,7 @@ public class ColarService {
 
     public List<Colar> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Colar", Colar.class).list();
+            return session.createQuery("FROM Colar c ORDER BY c.id", Colar.class).list();
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -66,6 +70,80 @@ public class ColarService {
             return Optional.empty();
         }
     }
+
+    public boolean existePorId(String id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Long count = session.createQuery(
+                    "SELECT COUNT(c) FROM Colar c WHERE c.id = :id", Long.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+            return count != null && count > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ─── ESCRITA ──────────────────────────────────────────────────────────────
+
+    /**
+     * Salva uma nova coleira no banco.
+     * Lança IllegalArgumentException se o ID já existir.
+     */
+    public void salvar(Colar colar) {
+        if (existePorId(colar.getId())) {
+            throw new IllegalArgumentException("Já existe uma coleira com o ID: " + colar.getId());
+        }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.persist(colar);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao salvar coleira: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Atualiza uma coleira existente no banco.
+     */
+    public void atualizar(Colar colar) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.merge(colar);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao atualizar coleira: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Exclui uma coleira pelo ID.
+     * Lança IllegalStateException se a coleira estiver vinculada a um animal.
+     */
+    public void excluir(String id, AnimalService animalService) {
+        // Verificar se está vinculada a algum animal
+        boolean vinculada = animalService.listarTodos().stream()
+                .anyMatch(a -> a.getColar() != null && a.getColar().getId().equals(id));
+        if (vinculada) {
+            throw new IllegalStateException(
+                "A coleira " + id + " está vinculada a um animal. Libere-a antes de excluir.");
+        }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            Colar c = session.get(Colar.class, id);
+            if (c != null) {
+                session.remove(c);
+            }
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao excluir coleira: " + e.getMessage(), e);
+        }
+    }
+
+    // ─── OPERAÇÕES DE VÍNCULO ────────────────────────────────────────────────
 
     public boolean vincularAoAnimal(String colarId, Animal animal) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -99,6 +177,8 @@ public class ColarService {
             e.printStackTrace();
         }
     }
+
+    // ─── CONSULTAS ───────────────────────────────────────────────────────────
 
     public List<Colar> colaresBateriaBaixa(int limiar) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

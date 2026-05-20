@@ -44,6 +44,14 @@ public class Lote {
     public List<Animal> getAnimais() { return animais; }
     public void addAnimal(Animal a) { animais.add(a); }
 
+    public double getAreaHectares() {
+    return areaHa;
+    }
+
+public int getCapacidade() {
+    return animais != null ? animais.size() : 0;
+    }
+
     @Override
     public String toString() { return nome + " (" + areaHa + " ha)"; }
 }

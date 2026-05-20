@@ -12,7 +12,7 @@ import javax.swing.*;
  */
 public class MainFrame extends JFrame {
 
-    // ── Índices de tela (coincidem com NavBar.ABAS) ─────────────────────────
+    // ── Índices de tela (coincidem com NavBar.ABAS) ──────────────────────────
     public static final int TELA_DASHBOARD   = 0;
     public static final int TELA_ANIMAIS     = 1;
     public static final int TELA_COLEIRAS    = 2;
@@ -24,8 +24,8 @@ public class MainFrame extends JFrame {
     public static final int TELA_CONFIG      = 8;
 
     private static final String[] NOMES = {
-        "DASHBOARD","ANIMAIS","COLEIRAS","FAZENDAS",
-        "ALERTAS","RELATORIOS","SAUDE","FINANCEIRO","CONFIG"
+        "DASHBOARD", "ANIMAIS", "BRINCOS", "FAZENDAS",
+        "ALERTAS", "RELATORIOS", "SAUDE", "FINANCEIRO", "CONFIG"
     };
 
     private final Backend    backend;
@@ -43,16 +43,21 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         this.backend = Backend.getInstance();
 
-        setTitle("SIRATECH — ERP Rural v3.0");
+        // ── Configuração da janela ────────────────────────────────────────────
+        setTitle("SIRATECH — Sistema Integrado de Rastreamento Agro");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1240, 740));
         setPreferredSize(new Dimension(1440, 840));
 
+        // Fundo global garantido — evita flicker branco no resize
+        getContentPane().setBackground(Tema.BG);
+
+        // ── Painel principal com CardLayout ───────────────────────────────────
         cardLayout      = new CardLayout();
         painelPrincipal = new JPanel(cardLayout);
         painelPrincipal.setBackground(Tema.BG);
 
-        // ── Montar telas ─────────────────────────────────────────────────────
+        // ── Montar telas ──────────────────────────────────────────────────────
         painelPrincipal.add(new LoginScreen(this, backend), "LOGIN");
 
         dashboardScreen = new DashboardScreen(this, backend);
@@ -61,8 +66,8 @@ public class MainFrame extends JFrame {
         animaisScreen = new CadastroAnimalScreen(this, backend);
         painelPrincipal.add(animaisScreen, "ANIMAIS");
 
-        painelPrincipal.add(new ColeiraScreen(this, backend),        "COLEIRAS");
-        painelPrincipal.add(new CadastroFazendaScreen(this, backend),"FAZENDAS");
+        painelPrincipal.add(new ColeiraScreen(this, backend),         "BRINCOS");
+        painelPrincipal.add(new CadastroFazendaScreen(this, backend), "FAZENDAS");
 
         monitoramentoScreen = new MonitoramentoScreen(this, backend);
         painelPrincipal.add(monitoramentoScreen, "ALERTAS");
@@ -105,7 +110,7 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
-    // ── Navegação ────────────────────────────────────────────────────────────
+    // ── Navegação ─────────────────────────────────────────────────────────────
 
     public void navegarPara(int tela) {
         if (!backend.authService.isLogado()) {
@@ -123,7 +128,7 @@ public class MainFrame extends JFrame {
         cardLayout.show(painelPrincipal, "LOGIN");
     }
 
-    // ── Atualização de dados ao navegar ──────────────────────────────────────
+    // ── Atualização de dados ao navegar ───────────────────────────────────────
 
     private void atualizarTela(int tela) {
         try {

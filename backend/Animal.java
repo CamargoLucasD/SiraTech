@@ -33,7 +33,7 @@ public class Animal {
     private String lote;
 
     @Column(name = "fazenda_id")
-    private int fazendaId;
+    private Integer fazendaId;
 
     @Column(name = "fazenda_nome")
     private String fazendaNome;
@@ -78,8 +78,8 @@ public class Animal {
     public void setDataNascimento(LocalDateTime dataNascimento) { this.dataNascimento = dataNascimento; }
     public String getLote() { return lote; }
     public void setLote(String lote) { this.lote = lote; }
-    public int getFazendaId() { return fazendaId; }
-    public void setFazendaId(int fazendaId) { this.fazendaId = fazendaId; }
+    public Integer getFazendaId() { return fazendaId; }
+    public void setFazendaId(Integer fazendaId) { this.fazendaId = fazendaId; }
     public String getFazendaNome() { return fazendaNome; }
     public void setFazendaNome(String fazendaNome) { this.fazendaNome = fazendaNome; }
     public String getStatus() { return status; }
