@@ -3,5 +3,6 @@ out/
 target/
 lib/
 SIRATECH-OBSIDIAN/
+SIRATECH-OBSIDIAN/.obsidian/
 siratech_postgres.sql
 .env
