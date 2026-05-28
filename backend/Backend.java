@@ -12,20 +12,22 @@ public class Backend {
     public final VacinaService        vacinaService;
     public final HistoricoVetService  historicoVetService;
     public final TransacaoService     transacaoService;
+    public final LoteService          loteService;
 
     private static Backend instancia;
 
     private Backend() {
-        this.authService         = new AuthService();
+        this.fazendaService      = new FazendaService();                          // ← inicializado ANTES do authService
+        this.authService         = new AuthService(fazendaService);               // ← recebe fazendaService
         this.animalService       = new AnimalService();
         this.colarService        = new ColarService();
-        this.fazendaService      = new FazendaService();
         this.geofenceService     = new GeofenceService();
         this.alertaService       = new AlertaService();
         this.rastreamentoService = new RastreamentoService(geofenceService, fazendaService, alertaService);
         this.vacinaService       = new VacinaService();
         this.historicoVetService = new HistoricoVetService();
         this.transacaoService    = new TransacaoService();
+        this.loteService         = new LoteService();
 
         Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtil::fechar));
     }

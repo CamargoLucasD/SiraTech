@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 import javax.swing.*;
 
 /**
@@ -15,7 +16,7 @@ import javax.swing.*;
  *
  * Modos de operação:
  *
- *   1. MODO ESTÁTICO (padrão original):
+ *   1. MODO ESTÁTICO (padrão):
  *      Animais distribuídos em posições fixas por status ("Ativo" = dentro).
  *      Usado quando não há simulador rodando.
  *
@@ -27,7 +28,7 @@ import javax.swing.*;
  */
 public class MapaPanel extends JPanel {
 
-    // ── Posições fixas — modo estático (compatibilidade original) ─────────────
+    // ── Posições fixas — modo estático ────────────────────────────────────────
     private static final double[][] POSICOES_DENTRO = {
         {0.22,0.38},{0.48,0.50},{0.63,0.28},{0.38,0.62},
         {0.54,0.70},{0.30,0.55},{0.70,0.55},{0.58,0.35},
@@ -49,20 +50,18 @@ public class MapaPanel extends JPanel {
     // ── Modo ao vivo ──────────────────────────────────────────────────────────
     private boolean modoAoVivo = false;
     private Timer   timerAoVivo;
-
-    // Última posição conhecida por animal (id → [lat, lon, dentroFlag])
-    private final Map<Integer, double[]> ultimasPosicoes = new HashMap<>();
-
-    // Referência à fazenda para converter coordenadas
     private Fazenda fazendaAtiva;
 
     // ── Animação ──────────────────────────────────────────────────────────────
     private int     frame        = 0;
     private boolean mostrarNomes = false;
+    private boolean badgePulse   = false;
     private final   Random rnd   = new Random(42);
 
-    // Badge "AO VIVO" — pisca enquanto modo ao vivo estiver ativo
-    private boolean badgePulse = false;
+    // ── API da V1 ─────────────────────────────────────────────────────────────
+    private Animal           animalSelecionado = null;
+    private Consumer<Animal> onAnimalClick;
+    private final List<Notificacao> notificacoes = new ArrayList<>();
 
     // ══════════════════════════════════════════════════════════════════════════
     // Construtores
@@ -78,12 +77,14 @@ public class MapaPanel extends JPanel {
         setBackground(Tema.BG3);
         setPreferredSize(new Dimension(400, 270));
         setBorder(BorderFactory.createLineBorder(Tema.BORDER, 1));
+        setFocusable(true);
         distribuirAnimais(animais);
 
         // Timer de animação
         new Timer(700, e -> { frame++; repaint(); }).start();
 
         addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 mostrarNomes = !mostrarNomes;
                 repaint();
@@ -125,7 +126,7 @@ public class MapaPanel extends JPanel {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // Modo Estático — API pública (original, preservada)
+    // Modo Estático — API pública
     // ══════════════════════════════════════════════════════════════════════════
 
     public void atualizarAnimais(List<Animal> animais) {
@@ -136,7 +137,29 @@ public class MapaPanel extends JPanel {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // Lógica interna — Modo Ao Vivo (original, preservada)
+    // API da V1 — seleção, clique e notificações
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public void setOnAnimalClick(Consumer<Animal> cb) {
+        this.onAnimalClick = cb;
+    }
+
+    public void selecionarAnimal(Animal a) {
+        this.animalSelecionado = a;
+        repaint();
+    }
+
+    public void deselecionarAnimal() {
+        this.animalSelecionado = null;
+        repaint();
+    }
+
+    public void adicionarNotificacao(String texto, Color cor) {
+        notificacoes.add(new Notificacao(texto, cor));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Lógica interna — Modo Ao Vivo
     // ══════════════════════════════════════════════════════════════════════════
 
     private void atualizarDosBanco(RastreamentoService rastreamentoService) {
@@ -147,8 +170,7 @@ public class MapaPanel extends JPanel {
             Map<Integer, Localizacao> porAnimal = new HashMap<>();
             for (Localizacao loc : recentes) {
                 if (loc.getAnimal() == null) continue;
-                int animalId = loc.getAnimal().getId();
-                porAnimal.putIfAbsent(animalId, loc);
+                porAnimal.putIfAbsent(loc.getAnimal().getId(), loc);
             }
 
             List<double[]> novoDentro    = new ArrayList<>();
@@ -157,16 +179,18 @@ public class MapaPanel extends JPanel {
             List<String>   nomNovoFora   = new ArrayList<>();
 
             for (Localizacao loc : porAnimal.values()) {
-                double[] relativo = latLonParaRelativo(loc.getLatitude(), loc.getLongitude());
-                relativo[0] = Math.max(0.02, Math.min(0.98, relativo[0]));
-                relativo[1] = Math.max(0.02, Math.min(0.98, relativo[1]));
+                double[] rel = latLonParaRelativo(loc.getLatitude(), loc.getLongitude());
+                rel[0] = Math.max(0.02, Math.min(0.98, rel[0]));
+                rel[1] = Math.max(0.02, Math.min(0.98, rel[1]));
 
                 String nome = loc.getAnimal().getNome() != null
                         ? loc.getAnimal().getNome() : "Animal";
 
-                boolean fora = "Fora".equals(loc.getStatus());
-                if (fora) { novoFora.add(relativo);   nomNovoFora.add(nome);   }
-                else      { novoDentro.add(relativo);  nomNovoDentro.add(nome); }
+                if ("Fora".equals(loc.getStatus())) {
+                    novoFora.add(rel);   nomNovoFora.add(nome);
+                } else {
+                    novoDentro.add(rel); nomNovoDentro.add(nome);
+                }
             }
 
             SwingUtilities.invokeLater(() -> {
@@ -201,7 +225,7 @@ public class MapaPanel extends JPanel {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // Lógica interna — Modo Estático (original, preservada)
+    // Lógica interna — Modo Estático
     // ══════════════════════════════════════════════════════════════════════════
 
     private void distribuirAnimais(List<Animal> animais) {
@@ -227,7 +251,7 @@ public class MapaPanel extends JPanel {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // Renderização
+    // Renderização — gráficos da V2
     // ══════════════════════════════════════════════════════════════════════════
 
     @Override
@@ -235,11 +259,10 @@ public class MapaPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // Antialiasing completo
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,        RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,   RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_RENDERING,           RenderingHints.VALUE_RENDER_QUALITY);
-        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,      RenderingHints.VALUE_STROKE_PURE);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,    RenderingHints.VALUE_STROKE_PURE);
 
         int w = getWidth(), h = getHeight();
 
@@ -282,6 +305,7 @@ public class MapaPanel extends JPanel {
             g2.setColor(Tema.TEXT3);
             g2.setFont(Tema.F_SMALL);
             g2.drawString("Nenhum animal nesta fazenda", w / 2 - 88, h / 2 + 4);
+            desenharNotificacoes(g2, w, h);
             return;
         }
 
@@ -289,6 +313,20 @@ public class MapaPanel extends JPanel {
         for (int i = 0; i < posDentro.size(); i++) {
             int ax = (int)(posDentro.get(i)[0] * w);
             int ay = (int)(posDentro.get(i)[1] * h);
+
+            boolean selecionado = (animalSelecionado != null && i < nomDentro.size()
+                    && nomDentro.get(i).equals(animalSelecionado.getNome()));
+
+            // Anel de seleção
+            if (selecionado) {
+                float pulso = (float)(0.6 + 0.4 * Math.sin(frame * 0.4));
+                int r = (int)(18 + 4 * pulso);
+                g2.setColor(new Color(255, 230, 60, (int)(200 * pulso)));
+                g2.setStroke(new BasicStroke(2.5f));
+                g2.drawOval(ax - r, ay - r, r * 2, r * 2);
+                g2.setColor(new Color(255, 240, 100, 50));
+                g2.fillOval(ax - r, ay - r, r * 2, r * 2);
+            }
 
             // Sombra
             g2.setColor(new Color(0, 0, 0, 50));
@@ -336,7 +374,7 @@ public class MapaPanel extends JPanel {
             }
         }
 
-        // ── Contador de animais — pill mais legível ───────────────────────────
+        // ── Contador de animais — pill ────────────────────────────────────────
         String contador = posDentro.size() + " dentro   " + posFora.size() + " fora";
         int pillW = contador.length() * 5 + 20;
         g2.setColor(new Color(10, 24, 12, 180));
@@ -345,7 +383,6 @@ public class MapaPanel extends JPanel {
         g2.setStroke(new BasicStroke(1f));
         g2.drawRoundRect(6, 6, pillW, 20, 8, 8);
 
-        // Pontos coloridos no contador
         g2.setColor(Tema.GREEN3);
         g2.fillOval(13, 13, 6, 6);
         g2.setColor(Tema.TEXT2);
@@ -370,19 +407,77 @@ public class MapaPanel extends JPanel {
             g2.setColor(new Color(220, 50, 50, badgeAlpha));
             g2.setStroke(new BasicStroke(1f));
             g2.drawRoundRect(bx, by, bw, bh, 8, 8);
-            // Ponto pulsante
             g2.setColor(new Color(255, 80, 80, badgeAlpha));
             g2.fillOval(bx + 8, by + 7, 6, 6);
             g2.setColor(Color.WHITE);
             g2.setFont(Tema.F_SMALL);
             g2.drawString("AO VIVO", bx + 18, by + 14);
         } else {
-            // Dica de clique (modo estático)
             g2.setColor(new Color(0, 0, 0, 120));
             g2.fillRoundRect(w - 108, h - 20, 104, 16, 5, 5);
             g2.setColor(Tema.TEXT3);
             g2.setFont(Tema.F_SMALL);
             g2.drawString("clique: nomes", w - 104, h - 8);
+        }
+
+        // ── Notificações flutuantes ───────────────────────────────────────────
+        desenharNotificacoes(g2, w, h);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Notificações (da V1)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private void desenharNotificacoes(Graphics2D g, int w, int h) {
+        notificacoes.removeIf(Notificacao::expirou);
+        int baseY = h - 28;
+        for (int i = notificacoes.size() - 1; i >= 0; i--) {
+            notificacoes.get(i).desenhar(g, 16, baseY);
+            baseY -= 44;
+        }
+    }
+
+    private static class Notificacao {
+        private final String texto;
+        private final Color  cor;
+        private final long   criado;
+        private static final long DURACAO = 4000;
+
+        Notificacao(String texto, Color cor) {
+            this.texto  = texto;
+            this.cor    = cor;
+            this.criado = System.currentTimeMillis();
+        }
+
+        boolean expirou() { return System.currentTimeMillis() - criado > DURACAO; }
+
+        void desenhar(Graphics2D g, int x, int y) {
+            long age = System.currentTimeMillis() - criado;
+            float al = age < 300 ? age / 300f
+                     : age > DURACAO - 500 ? (DURACAO - age) / 500f : 1f;
+            al = Math.max(0, Math.min(1, al));
+
+            Font f = new Font("SansSerif", Font.BOLD, 12);
+            g.setFont(f);
+            FontMetrics fm = g.getFontMetrics();
+            int tw = fm.stringWidth(texto), pw = tw + 24, ph = 28;
+            int bx = x, by = y - ph;
+
+            g.setColor(new Color(20, 22, 26, (int)(210 * al)));
+            g.fillRoundRect(bx, by, pw, ph, 8, 8);
+
+            Stroke s = g.getStroke();
+            g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), (int)(190 * al)));
+            g.setStroke(new BasicStroke(1.5f));
+            g.drawRoundRect(bx, by, pw, ph, 8, 8);
+            g.setStroke(s);
+
+            // Barra colorida lateral
+            g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), (int)(230 * al)));
+            g.fillRoundRect(bx, by + 4, 4, ph - 8, 3, 3);
+
+            g.setColor(new Color(230, 230, 220, (int)(225 * al)));
+            g.drawString(texto, bx + 12, by + ph / 2 + fm.getAscent() / 2 - 2);
         }
     }
 }

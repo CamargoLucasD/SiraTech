@@ -10,6 +10,9 @@ import com.formdev.flatlaf.FlatDarkLaf;
 public class frontend {
 
     public static void main(String[] args) {
+        // Silencia todo output do terminal (logs, prints de debug, etc.)
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        System.setErr(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
 
         // FlatLaf Dark — compatível com tema escuro do SIRATECH
         FlatDarkLaf.setup();

@@ -34,11 +34,15 @@ public class ConfigScreen extends JPanel {
     private JPanel criarConteudo() {
         JTabbedPane abas = Tema.criarAbas();
         abas.addTab("SISTEMA",        ico("settings", 14),        criarAbaSistema());
-        abas.addTab("USUÁRIOS",       ico("users", 14),           criarAbaUsuarios());
         abas.addTab("SEGURANÇA",      ico("lock", 14),            criarAbaSeguranca());
         abas.addTab("NOTIFICAÇÕES",   ico("bell", 14),            criarAbaNotif());
         abas.addTab("LOG ATIVIDADES", ico("clipboard-list", 14),  criarAbaLog());
-        abas.addTab("BANCO DE DADOS", ico("database", 14),        criarAbaBanco());
+
+        // Abas exclusivas para administradores
+        if (backend.authService.isAdmin()) {
+            abas.addTab("USUÁRIOS",       ico("users", 14),    criarAbaUsuarios());
+            abas.addTab("BANCO DE DADOS", ico("database", 14), criarAbaBanco());
+        }
 
         JPanel c = new JPanel(new BorderLayout());
         c.setBackground(Tema.BG);

@@ -2,14 +2,37 @@
 <!DOCTYPE hibernate-configuration PUBLIC
         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
-        <property name="hibernate.connection.url">jdbc:sqlite:${DB_PATH}</property>
-        <property name="hibernate.dialect">org.hibernate.community.dialect.SQLiteDialect</property>
+
+        <!-- Driver PostgreSQL -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+
+        <!-- URL, usuário e senha são injetados em runtime pelo HibernateUtil via System.getProperty -->
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/postgres?sslmode=require</property>
+        <property name="hibernate.connection.username">placeholder</property>
+        <property name="hibernate.connection.password">placeholder</property>
+
+        <!-- Dialeto PostgreSQL -->
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+
+        <!-- Schema padrão -->
+        <property name="hibernate.default_schema">public</property>
+
+        <!-- Mantém dados e atualiza estrutura se necessário -->
         <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- SQL no console: false em produção -->
         <property name="hibernate.show_sql">false</property>
 
+        <!-- Pool de conexões básico -->
+        <property name="hibernate.connection.pool_size">5</property>
+
+        <!-- Hibernate gerencia as transações -->
+        <property name="hibernate.connection.autocommit">false</property>
+
+        <!-- Entidades mapeadas -->
         <mapping class="backend.Animal"/>
         <mapping class="backend.Colar"/>
         <mapping class="backend.Localizacao"/>
@@ -17,5 +40,9 @@
         <mapping class="backend.Fazenda"/>
         <mapping class="backend.Alerta"/>
         <mapping class="backend.Usuario"/>
+        <mapping class="backend.Vacina"/>
+        <mapping class="backend.HistoricoVet"/>
+        <mapping class="backend.Transacao"/>
+
     </session-factory>
 </hibernate-configuration>

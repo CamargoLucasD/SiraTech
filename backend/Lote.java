@@ -15,6 +15,9 @@ public class Lote {
     @Column(name = "nome")
     private String nome;
 
+    @Column(name = "fazenda_id")
+    private int fazendaId;
+
     @Column(name = "area_ha")
     private double areaHa;
 
@@ -35,6 +38,8 @@ public class Lote {
     }
 
     public int getId() { return id; }
+    public int getFazendaId() { return fazendaId; }
+    public void setFazendaId(int fazendaId) { this.fazendaId = fazendaId; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public double getAreaHa() { return areaHa; }

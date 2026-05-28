@@ -113,6 +113,7 @@ public class DetalhesFazendaDialog extends JDialog {
                 try {
                     double area = Double.parseDouble(cA.getText().trim());
                     Lote novoLote = new Lote(0, cN.getText().trim(), area);
+                    novoLote.setFazendaId(f.getId()); // ← vincula à fazenda
                     try (org.hibernate.Session s = HibernateUtil.getSessionFactory().openSession()) {
                         s.beginTransaction();
                         s.persist(novoLote);

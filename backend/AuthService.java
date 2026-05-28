@@ -7,14 +7,19 @@ import java.util.*;
 public class AuthService {
 
     private Usuario usuarioLogado = null;
-    private Fazenda fazendaAtiva = null;
+    private Fazenda fazendaAtiva  = null;
+
+    private final FazendaService fazendaService;                                  // ← NOVO
 
     private final Map<String,Integer> tentativas = new HashMap<>();
     private final Map<String,Long> bloqueados    = new HashMap<>();
     private static final int MAX_TENTATIVAS = 5;
     private static final long TEMPO_BLOQUEIO_MS = 5 * 60 * 1000L;
 
-    public AuthService() { criarUsuariosIniciais(); }
+    public AuthService(FazendaService fazendaService) {                           // ← recebe dependência
+        this.fazendaService = fazendaService;
+        criarUsuariosIniciais();
+    }
 
     private void criarUsuariosIniciais() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -41,6 +46,12 @@ public class AuthService {
             Usuario u = q.uniqueResult();
             if (u != null && u.getSenha().equals(senha)) {
                 usuarioLogado = u;
+
+                // ── Seta fazenda ativa automaticamente ao logar ──────────────
+                if (fazendaAtiva == null) {
+                    fazendaAtiva = fazendaService.getFazendaPrincipal();           // ← NOVO
+                }
+
                 tentativas.remove(login);
                 bloqueados.remove(login);
                 return "OK";
@@ -112,11 +123,11 @@ public class AuthService {
     }
 
     public void setFazendaAtiva(Fazenda f) { this.fazendaAtiva = f; }
-    public Fazenda getFazendaAtiva() { return fazendaAtiva; }
+    public Fazenda getFazendaAtiva()        { return fazendaAtiva; }
 
     public void logout() { usuarioLogado = null; fazendaAtiva = null; }
-    public boolean isLogado() { return usuarioLogado != null; }
-    public String getUsuarioLogado() { return usuarioLogado != null ? usuarioLogado.getLogin() : null; }
-    public Usuario getUsuarioAtual() { return usuarioLogado; }
-    public boolean isAdmin() { return usuarioLogado != null && usuarioLogado.isAdmin(); }
+    public boolean isLogado()         { return usuarioLogado != null; }
+    public String getUsuarioLogado()  { return usuarioLogado != null ? usuarioLogado.getLogin() : null; }
+    public Usuario getUsuarioAtual()  { return usuarioLogado; }
+    public boolean isAdmin()          { return usuarioLogado != null && usuarioLogado.isAdmin(); }
 }

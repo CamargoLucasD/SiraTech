@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
+import javax.swing.text.MaskFormatter;
+import java.text.ParseException;
 
 public class CadastroAnimalScreen extends JPanel {
 
@@ -40,8 +42,11 @@ public class CadastroAnimalScreen extends JPanel {
         add(criarConteudo(), BorderLayout.CENTER);
     }
 
-    public void atualizar() { recarregarTabela(); }
-
+    public void atualizar() {
+        recarregarTabela();
+        // Recarrega o combo de lotes conforme a fazenda ativa atual
+        atualizarComboLotes(comboLote, backend.getFazendaAtiva());
+    }
     private JPanel criarConteudo() {
         JTabbedPane abas = Tema.criarAbas();
         abas.addTab("CADASTRO & LISTA",  ico("clipboard-list", 14), criarAbaLista());
@@ -164,8 +169,25 @@ public class CadastroAnimalScreen extends JPanel {
 
         // -- PESO / DATA NASC. ----------------------------------------------
         gbc.gridy++;
-        campoPeso     = Tema.criarCampo("");
-        campoDataNasc = Tema.criarCampo("dd/mm/aaaa");
+
+        campoPeso = Tema.criarCampo("");
+
+        try {
+        MaskFormatter mascaraData = new MaskFormatter("##/##/####");
+        mascaraData.setPlaceholderCharacter('_');
+        campoDataNasc = new JFormattedTextField(mascaraData);
+        campoDataNasc.setBackground(Tema.BG3);
+        campoDataNasc.setForeground(Tema.TEXT);
+        campoDataNasc.setCaretColor(Tema.GREENL);
+        campoDataNasc.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Tema.BORDER, 1),
+            BorderFactory.createEmptyBorder(7, 12, 7, 12)));
+
+    campoDataNasc.setFont(Tema.F_BODY);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         inner.add(Tema.par("PESO (KG)", campoPeso, "DATA NASC.", campoDataNasc), gbc);
 
         // -- FAZENDA / LOTE -------------------------------------------------
@@ -183,8 +205,17 @@ public class CadastroAnimalScreen extends JPanel {
                 }
             }
         }
-        comboLote = Tema.criarCombo("Lote A","Lote B","Lote C");
+        // Carrega lotes do banco filtrando pela fazenda ativa
+        comboLote = carregarComboLotes(fa);
         inner.add(Tema.par("FAZENDA", comboFazenda, "LOTE", comboLote), gbc);
+
+        // Ao trocar de fazenda, recarrega os lotes disponíveis
+        comboFazenda.addActionListener(e -> {
+            int idx = comboFazenda.getSelectedIndex();
+            List<Fazenda> fList = backend.fazendaService.listarTodas();
+            Fazenda fSel = (idx >= 0 && idx < fList.size()) ? fList.get(idx) : null;
+            atualizarComboLotes(comboLote, fSel);
+        });
 
         // -- STATUS / COLAR GPS ---------------------------------------------
         gbc.gridy++;
@@ -253,9 +284,11 @@ public class CadastroAnimalScreen extends JPanel {
         if (tabelaModel == null) return;
         tabelaModel.setRowCount(0);
         Fazenda fa = backend.getFazendaAtiva();
+        System.out.println("[DEBUG] fazenda ativa: " + (fa != null ? fa.getId() + " - " + fa.getNome() : "NULL"));
         List<Animal> lista = fa != null
                 ? backend.animalService.listarPorFazenda(fa.getId())
                 : backend.animalService.listarTodos();
+        System.out.println("[DEBUG] animais encontrados: " + lista.size());
         for (Animal a : lista)
             tabelaModel.addRow(new Object[]{
                     a.getNome(), a.getNumeroBrinco(), a.getRaca(), a.getLote(),
@@ -300,7 +333,7 @@ public class CadastroAnimalScreen extends JPanel {
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)));
 
         filtros.add(Tema.criarLabel("LOTE:",  Tema.F_SMALL, Tema.TEXT3));
-        JComboBox<String> fLote   = Tema.criarCombo("Todos","Lote A","Lote B","Lote C");
+        JComboBox<String> fLote = construirComboFiltroLotes();
         filtros.add(fLote);
         filtros.add(Tema.criarLabel("STATUS:",Tema.F_SMALL, Tema.TEXT3));
         JComboBox<String> fStatus = Tema.criarCombo("Todos","Ativo","Vendido","Abatido");
@@ -317,12 +350,13 @@ public class CadastroAnimalScreen extends JPanel {
         DefaultTableModel mf = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        Fazenda fa = backend.getFazendaAtiva();
-        List<Animal> todos = fa != null
-                ? backend.animalService.listarPorFazenda(fa.getId())
-                : backend.animalService.listarTodos();
         Runnable carregar = () -> {
             mf.setRowCount(0);
+            // Bug 1 e 3 corrigido: busca sempre atualizada do banco a cada execução
+            Fazenda faAtual = backend.getFazendaAtiva();
+            List<Animal> todos = faAtual != null
+                    ? backend.animalService.listarPorFazenda(faAtual.getId())
+                    : backend.animalService.listarTodos();
             String lo = fLote.getSelectedItem().toString();
             String st = fStatus.getSelectedItem().toString();
             String ra = fRaca.getSelectedItem().toString();
@@ -346,7 +380,13 @@ public class CadastroAnimalScreen extends JPanel {
 
         JButton csv = Tema.criarBotaoSecundario("EXPORTAR CSV");
         csv.setIcon(ico("download", 14));
-        csv.addActionListener(e -> exportarCSV(todos));
+        csv.addActionListener(e -> {
+            Fazenda faExp = backend.getFazendaAtiva();
+            List<Animal> todosExp = faExp != null
+                    ? backend.animalService.listarPorFazenda(faExp.getId())
+                    : backend.animalService.listarTodos();
+            exportarCSV(todosExp);
+        });
         JPanel s = new JPanel(new FlowLayout(FlowLayout.LEFT));
         s.setBackground(Tema.BG);
         s.add(csv);
@@ -505,4 +545,48 @@ public class CadastroAnimalScreen extends JPanel {
         );
     });
   }
+
+    // ─── Helpers: lotes dinâmicos ─────────────────────────────────────────────
+
+    /**
+     * Monta um JComboBox com os nomes dos lotes ativos da fazenda informada.
+     * Se a fazenda for nula ou não tiver lotes, mostra "Sem lotes cadastrados".
+     */
+    private JComboBox<String> carregarComboLotes(Fazenda fazenda) {
+        JComboBox<String> combo = new JComboBox<>();
+        atualizarComboLotes(combo, fazenda);
+        return combo;
+    }
+
+    /** Atualiza o conteúdo de um combo de lotes conforme a fazenda selecionada. */
+    private void atualizarComboLotes(JComboBox<String> combo, Fazenda fazenda) {
+        combo.removeAllItems();
+        List<Lote> lotes = fazenda != null
+                ? backend.loteService.listarAtivosPorFazenda(fazenda.getId())
+                : backend.loteService.listarAtivos();
+        if (lotes.isEmpty()) {
+            combo.addItem("Sem lotes cadastrados");
+        } else {
+            for (Lote l : lotes) {
+                combo.addItem(l.getNome());
+            }
+        }
+    }
+
+    /**
+     * Monta o combo de filtro de lotes (começa com "Todos" e depois os lotes
+     * da fazenda ativa, ou todos os lotes se não houver fazenda selecionada).
+     */
+    private JComboBox<String> construirComboFiltroLotes() {
+        JComboBox<String> combo = new JComboBox<>();
+        combo.addItem("Todos");
+        Fazenda fa = backend.getFazendaAtiva();
+        List<Lote> lotes = fa != null
+                ? backend.loteService.listarAtivosPorFazenda(fa.getId())
+                : backend.loteService.listarAtivos();
+        for (Lote l : lotes) {
+            combo.addItem(l.getNome());
+        }
+        return combo;
+    }
 }

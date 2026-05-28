@@ -72,7 +72,7 @@ public class FazendaService {
 
     public Fazenda getFazendaPrincipal() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Fazenda", Fazenda.class)
+            return session.createQuery("FROM Fazenda f ORDER BY f.id ASC", Fazenda.class)
                     .setMaxResults(1)
                     .uniqueResult();
         } catch (Exception e) {
@@ -87,6 +87,22 @@ public class FazendaService {
             session.merge(fazenda);
             session.getTransaction().commit();
             return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean excluir(int id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            Fazenda f = session.get(Fazenda.class, id);
+            if (f != null) {
+                session.remove(f);
+                session.getTransaction().commit();
+                return true;
+            }
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

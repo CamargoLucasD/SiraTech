@@ -1,7 +1,7 @@
-.vscode
-out
-target
-siratech.db
-resources
-lib
-SIRATECH-OBSIDIAN/.obsidian
+.vscode/
+out/
+target/
+lib/
+SIRATECH-OBSIDIAN/
+siratech_postgres.sql
+.env

@@ -81,7 +81,7 @@ public class MainFrame extends JFrame {
         financeiroScreen = new FinanceiroScreen(this, backend);
         painelPrincipal.add(financeiroScreen, "FINANCEIRO");
 
-        painelPrincipal.add(new ConfigScreen(this, backend), "CONFIG");
+        painelPrincipal.add(new JPanel(), "CONFIG"); // placeholder — recriado ao navegar
 
         setContentPane(painelPrincipal);
         cardLayout.show(painelPrincipal, "LOGIN");
@@ -128,6 +128,27 @@ public class MainFrame extends JFrame {
         cardLayout.show(painelPrincipal, "LOGIN");
     }
 
+    // ── Propagação de troca de fazenda para todas as telas ──────────────────
+
+    /**
+     * Chamado pela NavBar quando o usuário troca a fazenda ativa.
+     * Atualiza todas as telas que dependem da fazenda.
+     */
+    public void onFazendaTrocada() {
+        try {
+            dashboardScreen.atualizarDados();
+            animaisScreen.atualizar();
+            monitoramentoScreen.atualizarDados();
+            relatoriosScreen.atualizarDados();
+            saudeScreen.atualizarDados();
+            financeiroScreen.atualizarDados();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Navega pro dashboard para refletir a nova fazenda
+        navegarPara(0);
+    }
+
     // ── Atualização de dados ao navegar ───────────────────────────────────────
 
     private void atualizarTela(int tela) {
@@ -139,7 +160,13 @@ public class MainFrame extends JFrame {
                 case TELA_RELATORIOS -> relatoriosScreen.atualizarDados();
                 case TELA_SAUDE      -> saudeScreen.atualizarDados();
                 case TELA_FINANCEIRO -> financeiroScreen.atualizarDados();
-                // Coleiras, Fazendas e Config têm refresh via botão interno
+                case TELA_CONFIG     -> {
+                    // Recria o ConfigScreen a cada visita para refletir o perfil do usuário logado
+                    painelPrincipal.remove(painelPrincipal.getComponentCount() - 1);
+                    ConfigScreen configScreen = new ConfigScreen(this, backend);
+                    painelPrincipal.add(configScreen, "CONFIG");
+                    cardLayout.show(painelPrincipal, "CONFIG");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

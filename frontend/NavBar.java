@@ -257,7 +257,8 @@ public class NavBar extends JPanel {
         backend.authService.setFazendaAtiva(f);
         btnFaz.setText(f.getNome());
         LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Mudou fazenda ativa: " + f.getNome());
-        mainFrame.navegarPara(0);
+        // Propaga a troca para todas as telas antes de navegar
+        mainFrame.onFazendaTrocada();
     }
 
     // ── Busca global ──────────────────────────────────────────────────────────

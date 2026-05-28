@@ -86,10 +86,17 @@ public class ColeiraScreen extends JPanel {
             btnDel.setIcon(ico("trash-2", 16));
             btnDel.setIconTextGap(6);
 
+            JButton btnGerar = Tema.criarBotaoCyan("GERAR BRINCO");
+            btnGerar.setIcon(ico("zap", 16));
+            btnGerar.setIconTextGap(6);
+            btnGerar.setToolTipText("Gera automaticamente o próximo brinco no padrão C-XX");
+
             btnAdd.addActionListener(e -> adicionarComSenha());
+            btnGerar.addActionListener(e -> gerarBrincoAutomatico());
             btnEdt.addActionListener(e -> editarComSenha());
             btnDel.addActionListener(e -> excluirComSenha());
 
+            hr.add(btnGerar);
             hr.add(btnAdd);
             hr.add(btnEdt);
             hr.add(btnDel);
@@ -168,12 +175,18 @@ public class ColeiraScreen extends JPanel {
         bD.setIcon(ico("search", 16));
         bD.setIconTextGap(6);
 
+        JButton bG = Tema.criarBotaoCyan("NOVO BRINCO");
+        bG.setIcon(ico("zap", 16));
+        bG.setIconTextGap(6);
+        bG.setToolTipText("Gera automaticamente o próximo brinco no padrão C-XX");
+
         // Listeners — lógica original preservada
         bV.addActionListener(e -> vincular());
         bL.addActionListener(e -> liberar());
         bD.addActionListener(e -> detalhes());
+        bG.addActionListener(e -> gerarBrincoAutomatico());
 
-        acoes.add(bV); acoes.add(bL); acoes.add(bD);
+        acoes.add(bV); acoes.add(bL); acoes.add(bD); acoes.add(bG);
         card.add(acoes, BorderLayout.SOUTH);
 
         p.add(card, BorderLayout.CENTER);
@@ -253,6 +266,55 @@ public class ColeiraScreen extends JPanel {
         backend.colarService.buscarPorId(tabelaModel.getValueAt(row, 0).toString())
                 .ifPresent(c -> new DetalhesColeiraDialog(
                         SwingUtilities.getWindowAncestor(this), c, backend, this));
+    }
+
+    // ── Gerar brinco automático ──────────────────────────────────────────────
+
+    private void gerarBrincoAutomatico() {
+        JPasswordField pf = Tema.criarSenha();
+        if (JOptionPane.showConfirmDialog(this, pf,
+                "Confirme sua senha para gerar o brinco",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+        if (!backend.authService.verificarSenha(new String(pf.getPassword()))) {
+            JOptionPane.showMessageDialog(this, "Senha incorreta!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Calcula próximo número disponível no padrão C-XX
+        String proximoId = gerarProximoId();
+
+        int confirmar = JOptionPane.showConfirmDialog(this,
+                "Será gerado o brinco: " + proximoId + "\nBateria: 100% | Sinal: Forte | Freq: 5 min | Firmware: v2.4.1\n\nConfirmar?",
+                "Gerar Brinco", JOptionPane.YES_NO_OPTION);
+        if (confirmar != JOptionPane.YES_OPTION) return;
+
+        try {
+            Colar novo = new Colar(proximoId, 100, "Forte", 5);
+            backend.colarService.salvar(novo);
+            LogAtividades.registrar(backend.authService.getUsuarioLogado(), "Gerou brinco automático: " + proximoId);
+            carregarTabela();
+            JOptionPane.showMessageDialog(this,
+                    "Brinco " + proximoId + " gerado e cadastrado com sucesso!",
+                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "ID Duplicado", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao gerar brinco: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String gerarProximoId() {
+        List<Colar> todos = backend.colarService.listarTodos();
+        int maiorNumero = 0;
+        for (Colar c : todos) {
+            try {
+                String numStr = c.getId().replace("C-", "").trim();
+                int num = Integer.parseInt(numStr);
+                if (num > maiorNumero) maiorNumero = num;
+            } catch (NumberFormatException ignored) {}
+        }
+        int proximo = maiorNumero + 1;
+        return String.format("C-%02d", proximo);
     }
 
     private void adicionarComSenha() {

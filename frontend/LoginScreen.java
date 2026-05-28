@@ -239,6 +239,14 @@ public class LoginScreen extends JPanel {
             lblErro.setText("");
             lblErro.setForeground(Tema.RED);
             ultimaAtividade = System.currentTimeMillis();
+
+            // Define a fazenda principal como ativa logo após o login,
+            // garantindo que as telas filtrem pelos animais corretos
+            if (backend.authService.getFazendaAtiva() == null) {
+                backend.authService.setFazendaAtiva(
+                    backend.fazendaService.getFazendaPrincipal());
+            }
+
             LogAtividades.registrar(u, "Login no sistema");
             campoUsuario.setText("");
             campoSenha.setText("");

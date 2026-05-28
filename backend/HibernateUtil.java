@@ -2,6 +2,7 @@ package backend;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class HibernateUtil {
 
@@ -12,13 +13,27 @@ public class HibernateUtil {
             try {
                 Configuration config = new Configuration();
                 config.configure("hibernate.cfg.xml");
+                Dotenv dotenv = Dotenv.load();
 
-                // Resolve o caminho do banco via propriedade do sistema
-                // Passado pelo .bat como: java -DDB_PATH="C:/caminho/siratech.db"
-                String dbPath = System.getProperty("DB_PATH", "siratech.db");
-                config.setProperty("hibernate.connection.url", "jdbc:sqlite:" + dbPath);
+                String host     = dotenv.get("DB_HOST");
+                String port     = dotenv.get("DB_PORT", "5432");
+                String dbName   = dotenv.get("DB_NAME");
+                String user     = dotenv.get("DB_USER");
+                String password = dotenv.get("DB_PASSWORD");
 
-                // Entidades existentes
+                if (host == null || dbName == null || user == null || password == null) {
+                    throw new IllegalStateException(
+                        "Variáveis de ambiente obrigatórias não configuradas. " +
+                        "Defina DB_HOST, DB_NAME, DB_USER e DB_PASS antes de iniciar a aplicação."
+                    );
+                }
+
+                config.setProperty("hibernate.connection.url",
+                        "jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?sslmode=require");
+                config.setProperty("hibernate.connection.username", user);
+                config.setProperty("hibernate.connection.password", password);
+
+                // Entidades
                 config.addAnnotatedClass(Animal.class);
                 config.addAnnotatedClass(Colar.class);
                 config.addAnnotatedClass(Localizacao.class);
@@ -26,16 +41,16 @@ public class HibernateUtil {
                 config.addAnnotatedClass(Fazenda.class);
                 config.addAnnotatedClass(Alerta.class);
                 config.addAnnotatedClass(Usuario.class);
-
-                // Novas entidades
                 config.addAnnotatedClass(Vacina.class);
                 config.addAnnotatedClass(HistoricoVet.class);
                 config.addAnnotatedClass(Transacao.class);
 
                 sessionFactory = config.buildSessionFactory();
+
+            } catch (IllegalStateException e) {
+                throw e;
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Erro ao iniciar Hibernate: " + e.getMessage());
+                throw new RuntimeException("Erro ao iniciar Hibernate: " + e.getMessage(), e);
             }
         }
         return sessionFactory;

@@ -11,22 +11,53 @@ public class AnimalService {
     }
 
     private void carregarDadosIniciais() {
-        if (totalAnimais() == 0) {
-            cadastrar(new Animal(0, "Mimosa",  "Nelore",  "A-012", "Femea", 420, "Lote A"));
-            cadastrar(new Animal(0, "Estrela", "Gir",     "A-007", "Femea", 380, "Lote A"));
-            cadastrar(new Animal(0, "Flor",    "Angus",   "A-018", "Femea", 450, "Lote B"));
-            cadastrar(new Animal(0, "Bela",    "Brahman", "A-023", "Femea", 395, "Lote B"));
-            cadastrar(new Animal(0, "Nuvem",   "Nelore",  "A-002", "Femea", 410, "Lote A"));
-            cadastrar(new Animal(0, "Rosa",    "Senepol", "A-031", "Femea", 360, "Lote C"));
+        // Só insere dados iniciais se não houver nenhum animal E houver uma fazenda cadastrada
+        if (totalAnimais() > 0) return;
+
+        Fazenda fazenda = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            fazenda = session.createQuery("FROM Fazenda f ORDER BY f.id ASC", Fazenda.class)
+                    .setMaxResults(1).uniqueResult();
+        } catch (Exception e) { e.printStackTrace(); }
+
+        if (fazenda == null) return; // sem fazenda, não insere
+
+        final int fazendaId   = fazenda.getId();
+        final String fazNome  = fazenda.getNome();
+
+        Animal[] iniciais = {
+            new Animal(0, "Mimosa",  "Nelore",  "A-012", "Femea", 420, "Lote A"),
+            new Animal(0, "Estrela", "Gir",     "A-007", "Femea", 380, "Lote A"),
+            new Animal(0, "Flor",    "Angus",   "A-018", "Femea", 450, "Lote B"),
+            new Animal(0, "Bela",    "Brahman", "A-023", "Femea", 395, "Lote B"),
+            new Animal(0, "Nuvem",   "Nelore",  "A-002", "Femea", 410, "Lote A"),
+            new Animal(0, "Rosa",    "Senepol", "A-031", "Femea", 360, "Lote C"),
+        };
+
+        for (Animal a : iniciais) {
+            a.setFazendaId(fazendaId);
+            a.setFazendaNome(fazNome);
+            cadastrar(a);
         }
     }
 
     public Animal cadastrar(Animal animal) {
+        // Valida brinco duplicado antes de tentar inserir
+        if (animal.getNumeroBrinco() != null && !animal.getNumeroBrinco().isBlank()) {
+            Optional<Animal> existente = buscarPorBrinco(animal.getNumeroBrinco());
+            if (existente.isPresent()) {
+                throw new IllegalArgumentException(
+                    "Já existe um animal cadastrado com o brinco: " + animal.getNumeroBrinco());
+            }
+        }
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.persist(animal);
             session.getTransaction().commit();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao cadastrar animal: " + e.getMessage(), e);
+        }
         return animal;
     }
 
@@ -55,8 +86,9 @@ public class AnimalService {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Animal> q = session.createQuery(
                     "FROM Animal a WHERE a.fazendaId = :fid", Animal.class);
-            q.setParameter("fid", fazendaId);
-            return q.list();
+            q.setParameter("fid", Integer.valueOf(fazendaId));
+            List<Animal> result = q.list();
+            return result;
         } catch (Exception e) { e.printStackTrace(); return new ArrayList<>(); }
     }
 
@@ -64,7 +96,7 @@ public class AnimalService {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Animal> q = session.createQuery(
                     "FROM Animal a WHERE a.fazendaId = :fid AND a.status = 'Ativo'", Animal.class);
-            q.setParameter("fid", fazendaId);
+            q.setParameter("fid", Integer.valueOf(fazendaId));
             return q.list();
         } catch (Exception e) { e.printStackTrace(); return new ArrayList<>(); }
     }
